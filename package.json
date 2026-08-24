@@ -18,9 +18,10 @@
     "build:server": "npm run build --workspace=packages/server",
     "build:client": "npm run build --workspace=packages/client",
     "build": "npm run build:shared && npm run build:server && npm run build:client",
+    "test:shared": "npm run test --workspace=packages/shared",
     "test:server": "npm run test --workspace=packages/server",
     "test:client": "npm run test --workspace=packages/client",
-    "test": "npm run test:server && npm run test:client",
+    "test": "npm run test:shared && npm run test:server && npm run test:client",
     "lint:server": "npm run lint --workspace=packages/server",
     "lint:client": "npm run lint --workspace=packages/client"
   }
