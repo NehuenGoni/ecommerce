@@ -1,0 +1,27 @@
+{
+  "name": "growshop-ecommerce",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "packages/shared",
+    "packages/server",
+    "packages/client"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:server": "npm run dev --workspace=packages/server",
+    "dev:client": "npm run dev --workspace=packages/client",
+    "build:shared": "npm run build --workspace=packages/shared",
+    "build:server": "npm run build --workspace=packages/server",
+    "build:client": "npm run build --workspace=packages/client",
+    "build": "npm run build:shared && npm run build:server && npm run build:client",
+    "test:server": "npm run test --workspace=packages/server",
+    "test:client": "npm run test --workspace=packages/client",
+    "test": "npm run test:server && npm run test:client",
+    "lint:server": "npm run lint --workspace=packages/server",
+    "lint:client": "npm run lint --workspace=packages/client"
+  }
+}
