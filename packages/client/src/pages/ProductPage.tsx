@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useCart } from "@/contexts/CartContext";
 import { useProduct } from "@/hooks/useProduct";
 import { sortedImages } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
@@ -26,10 +27,12 @@ function ProductPageSkeleton() {
 export function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
   const { product, loading, error } = useProduct(slug ?? "");
+  const { addItem } = useCart();
   const [selectedSku, setSelectedSku] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [added, setAdded] = useState(false);
+  const [adding, setAdding] = useState(false);
 
   const variant = useMemo(() => {
     if (!product) return null;
@@ -50,11 +53,17 @@ export function ProductPage() {
   const isLowStock = !isOutOfStock && variant.stock <= variant.lowStockThreshold;
   const currentImage = images[activeImage];
 
-  function handleAddToCart() {
-    // TODO: conectar al carrito real (/api/cart) en el próximo módulo. Por
-    // ahora solo confirma la selección de forma visual.
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1800);
+  async function handleAddToCart() {
+    setAdding(true);
+    try {
+      // product/variant ya están garantizados no-null por el guard de arriba,
+      // pero TS no propaga esa narrowing dentro de esta función anidada.
+      await addItem(product!, variant!, quantity);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1800);
+    } finally {
+      setAdding(false);
+    }
   }
 
   return (
@@ -159,8 +168,14 @@ export function ProductPage() {
               </button>
             </div>
 
-            <Button type="button" size="lg" disabled={isOutOfStock} onClick={handleAddToCart} className="flex-1">
-              {added ? "¡Agregado!" : isOutOfStock ? "Sin stock" : "Agregar al carrito"}
+            <Button
+              type="button"
+              size="lg"
+              disabled={isOutOfStock || adding}
+              onClick={() => void handleAddToCart()}
+              className="flex-1"
+            >
+              {added ? "¡Agregado!" : isOutOfStock ? "Sin stock" : adding ? "Agregando..." : "Agregar al carrito"}
             </Button>
           </div>
 

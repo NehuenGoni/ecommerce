@@ -2,6 +2,7 @@ import { Menu, ShoppingBag, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CartContext";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
 import { SearchBox } from "./SearchBox";
@@ -36,6 +37,7 @@ function Logo() {
 
 export function Header() {
   const { categories } = useCategories();
+  const { itemCount } = useCart();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -69,9 +71,14 @@ export function Header() {
               <User />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild aria-label="Carrito de compras">
+          <Button variant="ghost" size="icon" asChild aria-label={`Carrito de compras${itemCount > 0 ? `, ${itemCount} items` : ""}`}>
             <Link to="/carrito" className="relative">
               <ShoppingBag />
+              {itemCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] font-bold text-accent-foreground">
+                  {itemCount}
+                </span>
+              )}
             </Link>
           </Button>
           <Button
