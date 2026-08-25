@@ -2,6 +2,7 @@ import { Types, type FilterQuery } from "mongoose";
 import type { AuthenticatedUser } from "../middleware/auth.js";
 import { Order, type OrderDocument, type OrderStatus, type PaymentStatus } from "../models/Order.js";
 import { BadRequestError, NotFoundError } from "../utils/errors.js";
+import type { PaginatedResult } from "../utils/pagination.js";
 import type { MyOrdersQuery, OrderQuery } from "../validators/order.validators.js";
 import { restoreStock } from "./inventory.service.js";
 
@@ -15,14 +16,6 @@ const STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   delivered: [],
   cancelled: [],
 };
-
-export interface PaginatedResult<T> {
-  items: T[];
-  total: number;
-  page: number;
-  limit: number;
-  pages: number;
-}
 
 export async function listOrders(query: OrderQuery): Promise<PaginatedResult<OrderDocument>> {
   const filter: FilterQuery<OrderDocument> = {};

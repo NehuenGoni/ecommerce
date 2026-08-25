@@ -9,8 +9,10 @@ import { authRouter } from "./routes/auth.routes.js";
 import { cartRouter } from "./routes/cart.routes.js";
 import { categoryRouter } from "./routes/category.routes.js";
 import { checkoutRouter } from "./routes/checkout.routes.js";
+import { inventoryRouter } from "./routes/inventory.routes.js";
 import { orderRouter } from "./routes/order.routes.js";
 import { productRouter } from "./routes/product.routes.js";
+import { supplierPurchaseRouter } from "./routes/supplierPurchase.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
 import { AppError } from "./utils/errors.js";
 
@@ -56,9 +58,8 @@ export function createApp(clientUrl: string): Express {
   app.use("/api/cart", cartRouter);
   app.use("/api/checkout", checkoutRouter);
   app.use("/api/orders", orderRouter);
-
-  // TODO: montar routers de inventario y compras a proveedores a medida que
-  // se implementa ese módulo.
+  app.use("/api/inventory", inventoryRouter);
+  app.use("/api/supplier-purchases", supplierPurchaseRouter);
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Ruta no encontrada" });
