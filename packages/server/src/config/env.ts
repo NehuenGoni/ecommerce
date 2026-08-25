@@ -13,6 +13,8 @@ const envSchema = z.object({
   MP_PUBLIC_KEY: z.string().optional().default(""),
   RESEND_API_KEY: z.string().optional().default(""),
   CLIENT_URL: z.string().url().default("http://localhost:5173"),
+  /** URL pública del server, usada para el webhook de Mercado Pago. Vacío en dev. */
+  SERVER_URL: z.string().optional().default(""),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -4,8 +4,11 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { mercadoPagoWebhook } from "./controllers/checkout.controller.js";
 import { authRouter } from "./routes/auth.routes.js";
+import { cartRouter } from "./routes/cart.routes.js";
 import { categoryRouter } from "./routes/category.routes.js";
+import { checkoutRouter } from "./routes/checkout.routes.js";
 import { productRouter } from "./routes/product.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
 import { AppError } from "./utils/errors.js";
@@ -22,6 +25,11 @@ export function createApp(clientUrl: string): Express {
   );
   app.use(express.json());
   app.use(cookieParser());
+
+  // Ver comentario en checkout.routes.ts: mongoSanitize() eliminaría el
+  // querystring "data.id" que Mercado Pago manda a este webhook.
+  app.post("/api/checkout/mercadopago/webhook", mercadoPagoWebhook);
+
   app.use(mongoSanitize());
 
   // Rate limit general de la API. Los endpoints de auth y checkout
@@ -44,9 +52,11 @@ export function createApp(clientUrl: string): Express {
   app.use("/api/categories", categoryRouter);
   app.use("/api/products", productRouter);
   app.use("/api/uploads", uploadRouter);
+  app.use("/api/cart", cartRouter);
+  app.use("/api/checkout", checkoutRouter);
 
-  // TODO: montar routers de orders, inventario, compras a proveedores, etc. a
-  // medida que se implementan los módulos correspondientes.
+  // TODO: montar routers de orders (listado/gestión de estados), inventario,
+  // compras a proveedores, etc. a medida que se implementan esos módulos.
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Ruta no encontrada" });
