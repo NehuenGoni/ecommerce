@@ -4,6 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
+import { SearchBox } from "./SearchBox";
 import { ThemeToggle } from "./ThemeToggle";
 
 function Logo() {
@@ -58,6 +59,8 @@ export function Header() {
             </NavLink>
           ))}
         </nav>
+
+        <SearchBox />
 
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
