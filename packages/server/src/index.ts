@@ -1,9 +1,7 @@
 import "dotenv/config";
 import { createApp } from "./app.js";
 import { connectDB, disconnectDB } from "./config/db.js";
-import { loadEnv } from "./config/env.js";
-
-const env = loadEnv();
+import { env } from "./config/env.js";
 
 async function bootstrap(): Promise<void> {
   await connectDB(env.MONGODB_URI);

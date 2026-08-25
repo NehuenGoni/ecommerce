@@ -25,3 +25,6 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
   }
   return parsed.data;
 }
+
+/** Singleton validado al importar el módulo, para uso en servicios/middleware. */
+export const env = loadEnv();
