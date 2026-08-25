@@ -5,6 +5,9 @@ import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import { authRouter } from "./routes/auth.routes.js";
+import { categoryRouter } from "./routes/category.routes.js";
+import { productRouter } from "./routes/product.routes.js";
+import { uploadRouter } from "./routes/upload.routes.js";
 import { AppError } from "./utils/errors.js";
 
 export function createApp(clientUrl: string): Express {
@@ -38,8 +41,11 @@ export function createApp(clientUrl: string): Express {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/categories", categoryRouter);
+  app.use("/api/products", productRouter);
+  app.use("/api/uploads", uploadRouter);
 
-  // TODO: montar routers de products, categories, orders, inventario, etc. a
+  // TODO: montar routers de orders, inventario, compras a proveedores, etc. a
   // medida que se implementan los módulos correspondientes.
 
   app.use((_req: Request, res: Response) => {

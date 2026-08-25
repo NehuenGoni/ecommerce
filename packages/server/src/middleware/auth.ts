@@ -34,6 +34,28 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
   }
 }
 
+/**
+ * Igual que `authenticate`, pero nunca rechaza la request: si no hay token o
+ * es inválido, simplemente continúa como anónimo. Útil en rutas públicas que
+ * exponen contenido extra cuando quien pide es admin (ej. productos inactivos).
+ */
+export function optionalAuthenticate(req: Request, _res: Response, next: NextFunction): void {
+  const header = req.headers.authorization;
+  if (!header?.startsWith("Bearer ")) {
+    next();
+    return;
+  }
+
+  const token = header.slice("Bearer ".length);
+  try {
+    const payload = verifyAccessToken(token);
+    req.user = { id: payload.sub, role: payload.role };
+  } catch {
+    // token inválido o expirado: se ignora, la request sigue como anónima
+  }
+  next();
+}
+
 export function requireRole(...roles: UserRole[]) {
   return (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user) {

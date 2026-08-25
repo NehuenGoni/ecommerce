@@ -87,6 +87,10 @@ const productSchema = new Schema<ProductDocument>(
 );
 
 productSchema.index({ "variants.sku": 1 }, { unique: true });
+productSchema.index(
+  { name: "text", shortDescription: "text", brand: "text", tags: "text" },
+  { default_language: "spanish" },
+);
 
 productSchema.pre("validate", function (next) {
   if (!this.slug && this.name) {
