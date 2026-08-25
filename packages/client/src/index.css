@@ -1,111 +1,126 @@
+@import "tailwindcss";
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  --background: #ece7d8; /* Lino */
+  --foreground: #1b1913; /* Corteza */
+  --card: #f6f2e7;
+  --card-foreground: #1b1913;
+  --muted: #e3dcc5;
+  --muted-foreground: #6b6353;
+  --border: #d8d0b4;
+  --input: #d8d0b4;
+  --primary: #1e3a2b; /* Pino */
+  --primary-foreground: #f6f2e7;
+  --secondary: #5b6e4f; /* Musgo */
+  --secondary-foreground: #f6f2e7;
+  --accent: #a9822f; /* Latón */
+  --accent-foreground: #1b1913;
+  --destructive: #a3432e;
+  --destructive-foreground: #f6f2e7;
+  --success: #4b6b44;
+  --success-foreground: #f6f2e7;
+  --warning: #8a6a22;
+  --warning-foreground: #f6f2e7;
+  --ring: #a9822f;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
-
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+  :root:not([data-theme="light"]) {
+    --background: #1b1913;
+    --foreground: #f3eee1;
+    --card: #242019;
+    --card-foreground: #f3eee1;
+    --muted: #2c2720;
+    --muted-foreground: #b7ae99;
+    --border: #3a3527;
+    --input: #3a3527;
+    --primary: #6fa37d;
+    --primary-foreground: #14251c;
+    --secondary: #8fa37e;
+    --secondary-foreground: #14251c;
+    --accent: #d8b15e;
+    --accent-foreground: #1b1913;
+    --destructive: #d97a63;
+    --destructive-foreground: #1b1913;
+    --success: #8fb37f;
+    --success-foreground: #14251c;
+    --warning: #c2914a;
+    --warning-foreground: #1b1913;
+    --ring: #d8b15e;
   }
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
+:root[data-theme="dark"] {
+  --background: #1b1913;
+  --foreground: #f3eee1;
+  --card: #242019;
+  --card-foreground: #f3eee1;
+  --muted: #2c2720;
+  --muted-foreground: #b7ae99;
+  --border: #3a3527;
+  --input: #3a3527;
+  --primary: #6fa37d;
+  --primary-foreground: #14251c;
+  --secondary: #8fa37e;
+  --secondary-foreground: #14251c;
+  --accent: #d8b15e;
+  --accent-foreground: #1b1913;
+  --destructive: #d97a63;
+  --destructive-foreground: #1b1913;
+  --success: #8fb37f;
+  --success-foreground: #14251c;
+  --warning: #c2914a;
+  --warning-foreground: #1b1913;
+  --ring: #d8b15e;
+}
+
+@theme {
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Karla", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 0.75rem;
+}
+
+/* @theme inline mantiene la referencia var(--token) en vez de "hornear" el
+   valor: así una misma clase utilitaria (ej. bg-primary) resuelve distinto
+   según el tema activo, sin generar CSS por tema. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 body {
-  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
-}
-
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
-}
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
-}
-p {
-  margin: 0;
-}
-
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
-
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+:focus-visible {
+  outline: 2px solid var(--color-ring);
+  outline-offset: 2px;
 }
