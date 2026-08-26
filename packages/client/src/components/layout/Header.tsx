@@ -1,7 +1,8 @@
-import { Menu, ShoppingBag, User, X } from "lucide-react";
+import { LayoutDashboard, Menu, ShoppingBag, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
@@ -38,6 +39,7 @@ function Logo() {
 export function Header() {
   const { categories } = useCategories();
   const { itemCount } = useCart();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -66,6 +68,13 @@ export function Header() {
 
         <div className="flex items-center gap-1.5">
           <ThemeToggle />
+          {user?.role === "admin" && (
+            <Button variant="ghost" size="icon" asChild aria-label="Panel admin">
+              <Link to="/admin">
+                <LayoutDashboard />
+              </Link>
+            </Button>
+          )}
           <Button variant="ghost" size="icon" asChild aria-label="Mi cuenta">
             <Link to="/cuenta">
               <User />

@@ -1,6 +1,8 @@
 import { formatARS, type Order } from "@growshop/shared";
 
-export function OrderItemsSummary({ order }: { order: Order }) {
+type OrderSummary = Pick<Order, "orderNumber" | "items" | "subtotal" | "shippingCost" | "total">;
+
+export function OrderItemsSummary({ order }: { order: OrderSummary }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between">

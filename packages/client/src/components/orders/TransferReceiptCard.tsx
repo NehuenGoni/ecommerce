@@ -1,7 +1,7 @@
 import type { Order } from "@growshop/shared";
 import { type ChangeEvent, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { uploadReceiptImage } from "@/lib/uploadReceipt";
+import { uploadImage } from "@/lib/upload";
 
 interface TransferReceiptCardProps {
   order: Order;
@@ -12,7 +12,7 @@ interface TransferReceiptCardProps {
 export function TransferReceiptCard({ order, accessToken, onReceiptSent }: TransferReceiptCardProps) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const hasReceipt = Boolean(order.paymentDetails.receiptUrl);
+  const hasReceipt = Boolean(order.paymentDetails?.receiptUrl);
 
   async function handleReceiptUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -21,7 +21,7 @@ export function TransferReceiptCard({ order, accessToken, onReceiptSent }: Trans
     setUploading(true);
     setUploadError(null);
     try {
-      const url = await uploadReceiptImage(file, accessToken);
+      const url = await uploadImage(file, accessToken, "receipts");
       await apiFetch(`/orders/${order._id}/receipt`, {
         method: "PATCH",
         accessToken,

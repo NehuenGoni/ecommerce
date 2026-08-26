@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AccountLayout } from "@/components/account/AccountLayout";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Layout } from "@/components/layout/Layout";
 import { CartPage } from "@/pages/CartPage";
 import { CatalogPage } from "@/pages/CatalogPage";
@@ -14,6 +15,15 @@ import { AddressesPage } from "@/pages/account/AddressesPage";
 import { OrderDetailPage } from "@/pages/account/OrderDetailPage";
 import { OrdersListPage } from "@/pages/account/OrdersListPage";
 import { ProfilePage } from "@/pages/account/ProfilePage";
+import { CategoriesPage as AdminCategoriesPage } from "@/pages/admin/CategoriesPage";
+import { DashboardPage as AdminDashboardPage } from "@/pages/admin/DashboardPage";
+import { InventoryPage as AdminInventoryPage } from "@/pages/admin/InventoryPage";
+import { OrderDetailPage as AdminOrderDetailPage } from "@/pages/admin/OrderDetailPage";
+import { OrdersListPage as AdminOrdersListPage } from "@/pages/admin/OrdersListPage";
+import { ProductFormPage as AdminProductFormPage } from "@/pages/admin/ProductFormPage";
+import { ProductsListPage as AdminProductsListPage } from "@/pages/admin/ProductsListPage";
+import { PurchaseFormPage as AdminPurchaseFormPage } from "@/pages/admin/PurchaseFormPage";
+import { PurchasesListPage as AdminPurchasesListPage } from "@/pages/admin/PurchasesListPage";
 
 function App() {
   return (
@@ -32,6 +42,18 @@ function App() {
           <Route path="pedidos/:id" element={<OrderDetailPage />} />
           <Route path="direcciones" element={<AddressesPage />} />
           <Route path="datos" element={<ProfilePage />} />
+        </Route>
+        <Route path="admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="productos" element={<AdminProductsListPage />} />
+          <Route path="productos/nuevo" element={<AdminProductFormPage />} />
+          <Route path="productos/:id/editar" element={<AdminProductFormPage />} />
+          <Route path="categorias" element={<AdminCategoriesPage />} />
+          <Route path="pedidos" element={<AdminOrdersListPage />} />
+          <Route path="pedidos/:id" element={<AdminOrderDetailPage />} />
+          <Route path="inventario" element={<AdminInventoryPage />} />
+          <Route path="compras" element={<AdminPurchasesListPage />} />
+          <Route path="compras/nueva" element={<AdminPurchaseFormPage />} />
         </Route>
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />

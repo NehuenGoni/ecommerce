@@ -8,15 +8,22 @@ interface CloudinarySignature {
   cloudName: string;
 }
 
+export type UploadContext = "products" | "receipts";
+
 /**
- * Sube el comprobante directo a Cloudinary (subida firmada, sin pasar por
- * nuestro servidor) y devuelve la URL pública resultante.
+ * Sube una imagen directo a Cloudinary (subida firmada, sin pasar por
+ * nuestro servidor) y devuelve la URL pública resultante. "products" solo
+ * lo puede usar un admin (lo valida el propio endpoint de la firma).
  */
-export async function uploadReceiptImage(file: File, accessToken: string): Promise<string> {
+export async function uploadImage(
+  file: File,
+  accessToken: string,
+  context: UploadContext,
+): Promise<string> {
   const sig = await apiFetch<CloudinarySignature>("/uploads/cloudinary-signature", {
     method: "POST",
     accessToken,
-    body: JSON.stringify({ context: "receipts" }),
+    body: JSON.stringify({ context }),
   });
 
   const formData = new FormData();
@@ -32,7 +39,7 @@ export async function uploadReceiptImage(file: File, accessToken: string): Promi
   });
 
   if (!res.ok) {
-    throw new Error("No pudimos subir el comprobante. Probá de nuevo.");
+    throw new Error("No pudimos subir la imagen. Probá de nuevo.");
   }
 
   const data = (await res.json()) as { secure_url: string };
