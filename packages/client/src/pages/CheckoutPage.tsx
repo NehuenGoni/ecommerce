@@ -22,6 +22,13 @@ export function CheckoutPage() {
   const { items, subtotal, loading: cartLoading, refresh } = useCart();
   const navigate = useNavigate();
 
+  // null = "todavía no eligió explícitamente": se deriva de `user` en cada
+  // render en vez de fijarse una sola vez con un lazy initializer de
+  // useState. Justo después de un reload, `user` sigue siendo null en el
+  // primer render (AuthContext todavía no resolvió /auth/refresh) y este
+  // componente no se vuelve a montar cuando `user` aparece — un lazy
+  // initializer se hubiera quedado pegado en "new" para siempre.
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [province, setProvince] = useState("");
@@ -37,6 +44,9 @@ export function CheckoutPage() {
   const total = subtotal + shippingCost;
 
   const unavailableItems = useMemo(() => items.filter((item) => !item.available), [items]);
+  const effectiveAddressId =
+    selectedAddressId ?? user?.addresses.find((a) => a.isDefault)?._id ?? user?.addresses[0]?._id ?? "new";
+  const selectedAddress = user?.addresses.find((a) => a._id === effectiveAddressId);
 
   if (initializing || cartLoading) return null;
   if (!user) return <Navigate to="/login?redirect=/checkout" replace />;
@@ -64,7 +74,15 @@ export function CheckoutPage() {
         method: "POST",
         accessToken: accessToken ?? undefined,
         body: JSON.stringify({
-          shippingAddress: { street, city, province, zipCode },
+          shippingAddress: selectedAddress
+            ? {
+                label: selectedAddress.label,
+                street: selectedAddress.street,
+                city: selectedAddress.city,
+                province: selectedAddress.province,
+                zipCode: selectedAddress.zipCode,
+              }
+            : { street, city, province, zipCode },
           shippingMethod,
           paymentMethod,
           customerNotes,
@@ -99,36 +117,82 @@ export function CheckoutPage() {
         <div className="flex flex-col gap-8">
           <section>
             <h2 className="font-display text-lg font-bold">Dirección de envío</h2>
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <input
-                required
-                placeholder="Calle y número"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                className="rounded-md border border-border bg-card px-3 py-2 text-sm sm:col-span-2"
-              />
-              <input
-                required
-                placeholder="Ciudad"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                className="rounded-md border border-border bg-card px-3 py-2 text-sm"
-              />
-              <input
-                required
-                placeholder="Provincia"
-                value={province}
-                onChange={(e) => setProvince(e.target.value)}
-                className="rounded-md border border-border bg-card px-3 py-2 text-sm"
-              />
-              <input
-                required
-                placeholder="Código postal"
-                value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
-                className="rounded-md border border-border bg-card px-3 py-2 text-sm"
-              />
-            </div>
+
+            {user.addresses.length > 0 && (
+              <div className="mt-3 flex flex-col gap-2">
+                {user.addresses.map((address) => (
+                  <label
+                    key={address._id}
+                    className={cn(
+                      "flex cursor-pointer items-start gap-2.5 rounded-md border px-4 py-3 text-sm",
+                      effectiveAddressId === address._id ? "border-primary" : "border-border",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="savedAddress"
+                      className="mt-1"
+                      checked={effectiveAddressId === address._id}
+                      onChange={() => setSelectedAddressId(address._id)}
+                    />
+                    <span>
+                      <span className="font-semibold">{address.label || "Dirección"}</span>
+                      <br />
+                      <span className="text-muted-foreground">
+                        {address.street}, {address.city}, {address.province} ({address.zipCode})
+                      </span>
+                    </span>
+                  </label>
+                ))}
+                <label
+                  className={cn(
+                    "flex cursor-pointer items-center gap-2.5 rounded-md border px-4 py-3 text-sm font-medium",
+                    effectiveAddressId === "new" ? "border-primary" : "border-border",
+                  )}
+                >
+                  <input
+                    type="radio"
+                    name="savedAddress"
+                    checked={effectiveAddressId === "new"}
+                    onChange={() => setSelectedAddressId("new")}
+                  />
+                  Usar otra dirección
+                </label>
+              </div>
+            )}
+
+            {effectiveAddressId === "new" && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                <input
+                  required
+                  placeholder="Calle y número"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm sm:col-span-2"
+                />
+                <input
+                  required
+                  placeholder="Ciudad"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm"
+                />
+                <input
+                  required
+                  placeholder="Provincia"
+                  value={province}
+                  onChange={(e) => setProvince(e.target.value)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm"
+                />
+                <input
+                  required
+                  placeholder="Código postal"
+                  value={zipCode}
+                  onChange={(e) => setZipCode(e.target.value)}
+                  className="rounded-md border border-border bg-card px-3 py-2 text-sm"
+                />
+              </div>
+            )}
           </section>
 
           <section>

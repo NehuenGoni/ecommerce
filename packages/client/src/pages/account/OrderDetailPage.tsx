@@ -1,24 +1,19 @@
 import type { Order } from "@growshop/shared";
 import { useCallback, useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { OrderItemsSummary } from "@/components/orders/OrderItemsSummary";
+import { OrderStatusBadge } from "@/components/orders/OrderStatusBadge";
+import { OrderStatusTimeline } from "@/components/orders/OrderStatusTimeline";
 import { TransferReceiptCard } from "@/components/orders/TransferReceiptCard";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiFetch } from "@/lib/api";
-import { NotFound } from "./NotFound";
+import { PAYMENT_METHOD_LABELS } from "@/lib/orderLabels";
+import { NotFound } from "../NotFound";
 
-const PAYMENT_QUERY_MESSAGES: Record<string, string> = {
-  exitoso: "¡Gracias! Estamos confirmando tu pago con Mercado Pago.",
-  fallido: "El pago no se pudo procesar. Podés reintentarlo contactándonos.",
-  pendiente: "Tu pago está pendiente de confirmación.",
-};
-
-export function OrderConfirmationPage() {
+export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { accessToken } = useAuth();
-  const [searchParams] = useSearchParams();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -36,39 +31,43 @@ export function OrderConfirmationPage() {
   }, [fetchOrder]);
 
   if (loading) {
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-16">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="mt-4 h-40 w-full" />
-      </div>
-    );
+    return <Skeleton className="h-64 w-full" />;
   }
 
   if (notFound || !order || !accessToken) {
     return <NotFound />;
   }
 
-  const paymentMessage = searchParams.get("pago") ? PAYMENT_QUERY_MESSAGES[searchParams.get("pago")!] : null;
-
   return (
-    <div className="mx-auto max-w-2xl px-4 py-16">
-      <p className="font-mono text-sm text-muted-foreground">{order.orderNumber}</p>
-      <h1 className="mt-1 font-display text-3xl font-bold">¡Gracias por tu pedido!</h1>
+    <div>
+      <Link to="/cuenta/pedidos" className="text-sm text-muted-foreground hover:text-primary">
+        ← Volver a mis pedidos
+      </Link>
 
-      {paymentMessage && (
-        <p className="mt-3 rounded-md border border-border bg-card px-4 py-3 text-sm">{paymentMessage}</p>
-      )}
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="font-mono text-sm text-muted-foreground">{order.orderNumber}</p>
+          <h2 className="font-display text-2xl font-bold">Detalle del pedido</h2>
+        </div>
+        <OrderStatusBadge status={order.status} />
+      </div>
+
+      <p className="mt-1 text-sm text-muted-foreground">
+        Pago: {PAYMENT_METHOD_LABELS[order.paymentMethod]}
+        {order.trackingNumber && (
+          <>
+            {" · "}Tracking: <span className="font-mono">{order.trackingNumber}</span>
+          </>
+        )}
+      </p>
 
       <div className="mt-6 flex flex-col gap-4">
         <OrderItemsSummary order={order} />
         {order.paymentMethod === "transfer" && (
           <TransferReceiptCard order={order} accessToken={accessToken} onReceiptSent={fetchOrder} />
         )}
+        <OrderStatusTimeline history={order.statusHistory} />
       </div>
-
-      <Button asChild size="lg" className="mt-6">
-        <Link to="/">Seguir comprando</Link>
-      </Button>
     </div>
   );
 }

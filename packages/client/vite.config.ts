@@ -11,6 +11,21 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    // El refresh token vive en una cookie httpOnly. Si el cliente le pega
+    // directo a localhost:4000, es cross-origin y los navegadores modernos
+    // descartan esa cookie por el bloqueo de cookies de terceros (verificado:
+    // el header Set-Cookie del server es válido, pero el browser nunca la
+    // guarda). Proxyando /api acá, todo el tráfico queda same-origin desde
+    // la perspectiva del navegador — mismo mecanismo que el rewrite de
+    // vercel.json en producción.
+    proxy: {
+      '/api': {
+        target: 'http://localhost:4000',
+        changeOrigin: true,
+      },
+    },
+  },
   test: {
     environment: 'jsdom',
     globals: true,

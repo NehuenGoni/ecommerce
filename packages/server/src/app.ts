@@ -14,6 +14,7 @@ import { orderRouter } from "./routes/order.routes.js";
 import { productRouter } from "./routes/product.routes.js";
 import { supplierPurchaseRouter } from "./routes/supplierPurchase.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
+import { userRouter } from "./routes/user.routes.js";
 import { AppError } from "./utils/errors.js";
 
 export function createApp(clientUrl: string): Express {
@@ -52,6 +53,7 @@ export function createApp(clientUrl: string): Express {
   });
 
   app.use("/api/auth", authRouter);
+  app.use("/api/users", userRouter);
   app.use("/api/categories", categoryRouter);
   app.use("/api/products", productRouter);
   app.use("/api/uploads", uploadRouter);

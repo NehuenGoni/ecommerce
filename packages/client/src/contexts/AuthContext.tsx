@@ -23,6 +23,9 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
   logout: () => Promise<void>;
+  /** Sincroniza el user local después de editar perfil/direcciones (esos
+   * endpoints ya devuelven el user actualizado, evita un refetch extra). */
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -70,9 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(null);
   }, []);
 
+  const updateUser = useCallback((nextUser: AuthUser) => {
+    setUser(nextUser);
+  }, []);
+
   const value = useMemo(
-    () => ({ user, accessToken, initializing, login, register, logout }),
-    [user, accessToken, initializing, login, register, logout],
+    () => ({ user, accessToken, initializing, login, register, logout, updateUser }),
+    [user, accessToken, initializing, login, register, logout, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,4 +1,7 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
+// Relativo a propósito: mantiene el pedido same-origin (proxy de Vite en dev,
+// rewrite de Vercel en producción) para que la cookie httpOnly del refresh
+// token no caiga en el bloqueo de cookies de terceros de los navegadores.
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export class ApiError extends Error {
   readonly status: number;
