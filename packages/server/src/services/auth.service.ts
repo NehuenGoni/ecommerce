@@ -1,4 +1,4 @@
-import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { HydratedDocument } from "mongoose";
 import { env } from "../config/env.js";
 import { PasswordResetToken } from "../models/PasswordResetToken.js";
@@ -6,6 +6,7 @@ import { RefreshToken } from "../models/RefreshToken.js";
 import { User, type UserDocument } from "../models/User.js";
 import { sendPasswordResetEmail, sendWelcomeEmail } from "./email.service.js";
 import { ConflictError, UnauthorizedError } from "../utils/errors.js";
+import { generateSecureToken, hashSecureToken } from "../utils/secureToken.js";
 import {
   REFRESH_TOKEN_TTL_MS,
   signAccessToken,
@@ -16,10 +17,6 @@ import type { LoginInput, RegisterInput } from "../validators/auth.validators.js
 
 const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
 
-function hashResetToken(token: string): string {
-  return createHash("sha256").update(token).digest("hex");
-}
-
 interface TokenPair {
   accessToken: string;
   refreshToken: string;
@@ -29,7 +26,7 @@ interface AuthResult extends TokenPair {
   user: HydratedDocument<UserDocument>;
 }
 
-async function issueTokenPair(user: HydratedDocument<UserDocument>): Promise<TokenPair> {
+export async function issueTokenPair(user: HydratedDocument<UserDocument>): Promise<TokenPair> {
   const userId = user._id.toString();
   const accessToken = signAccessToken({ sub: userId, role: user.role });
 
@@ -124,10 +121,10 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const user = await User.findOne({ email });
   if (!user) return;
 
-  const rawToken = randomBytes(32).toString("hex");
+  const rawToken = generateSecureToken();
   await PasswordResetToken.create({
     user: user._id,
-    tokenHash: hashResetToken(rawToken),
+    tokenHash: hashSecureToken(rawToken),
     expiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
   });
 
@@ -136,7 +133,7 @@ export async function requestPasswordReset(email: string): Promise<void> {
 }
 
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
-  const resetToken = await PasswordResetToken.findOne({ tokenHash: hashResetToken(token) });
+  const resetToken = await PasswordResetToken.findOne({ tokenHash: hashSecureToken(token) });
   if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
     throw new UnauthorizedError("El link de recuperación es inválido o venció");
   }

@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { AccountLayout } from "@/components/account/AccountLayout";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Layout } from "@/components/layout/Layout";
+import { AcceptInvitePage } from "@/pages/AcceptInvitePage";
 import { CartPage } from "@/pages/CartPage";
 import { CatalogPage } from "@/pages/CatalogPage";
 import { CheckoutPage } from "@/pages/CheckoutPage";
@@ -17,6 +18,7 @@ import { AddressesPage } from "@/pages/account/AddressesPage";
 import { OrderDetailPage } from "@/pages/account/OrderDetailPage";
 import { OrdersListPage } from "@/pages/account/OrdersListPage";
 import { ProfilePage } from "@/pages/account/ProfilePage";
+import { AdminsPage as AdminAdminsPage } from "@/pages/admin/AdminsPage";
 import { CategoriesPage as AdminCategoriesPage } from "@/pages/admin/CategoriesPage";
 import { DashboardPage as AdminDashboardPage } from "@/pages/admin/DashboardPage";
 import { InventoryPage as AdminInventoryPage } from "@/pages/admin/InventoryPage";
@@ -56,11 +58,13 @@ function App() {
           <Route path="inventario" element={<AdminInventoryPage />} />
           <Route path="compras" element={<AdminPurchasesListPage />} />
           <Route path="compras/nueva" element={<AdminPurchaseFormPage />} />
+          <Route path="administradores" element={<AdminAdminsPage />} />
         </Route>
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />
         <Route path="olvide-contrasena" element={<ForgotPasswordPage />} />
         <Route path="restablecer-contrasena" element={<ResetPasswordPage />} />
+        <Route path="aceptar-invitacion" element={<AcceptInvitePage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

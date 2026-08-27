@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { env } from "../config/env.js";
 import { User } from "../models/User.js";
+import * as adminService from "../services/admin.service.js";
 import * as authService from "../services/auth.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { NotFoundError, UnauthorizedError } from "../utils/errors.js";
@@ -83,4 +84,11 @@ export const forgotPassword = asyncHandler(async (req: Request, res: Response) =
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
   await authService.resetPassword(req.body.token, req.body.password);
   res.status(204).send();
+});
+
+export const acceptInvite = asyncHandler(async (req: Request, res: Response) => {
+  const user = await adminService.acceptInvite(req.body);
+  const { accessToken, refreshToken } = await authService.issueTokenPair(user);
+  setRefreshCookie(res, refreshToken);
+  res.status(201).json({ user, accessToken });
 });

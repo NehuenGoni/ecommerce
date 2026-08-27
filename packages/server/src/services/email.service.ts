@@ -104,3 +104,30 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
   );
   await sendEmail(to, "Restablecer tu contraseña de Growshop", html);
 }
+
+export async function sendAdminInviteEmail(to: string, acceptUrl: string): Promise<void> {
+  const html = layout(
+    "Te invitaron a administrar Growshop",
+    `
+      <p>Te dieron acceso de administrador. Este link para crear tu cuenta vence en 7 días:</p>
+      <p><a href="${acceptUrl}">${acceptUrl}</a></p>
+    `,
+  );
+  await sendEmail(to, "Invitación a administrar Growshop", html);
+}
+
+export async function sendAdminPromotedEmail(to: string): Promise<void> {
+  const html = layout(
+    "Ahora sos administrador",
+    `<p>Te dieron acceso de administrador en Growshop. Entrá con tu cuenta de siempre.</p>`,
+  );
+  await sendEmail(to, "Ahora sos administrador en Growshop", html);
+}
+
+export async function sendAdminRevokedEmail(to: string): Promise<void> {
+  const html = layout(
+    "Tu acceso de administrador fue revocado",
+    `<p>Ya no tenés acceso de administrador en Growshop.</p>`,
+  );
+  await sendEmail(to, "Tu acceso de administrador fue revocado", html);
+}

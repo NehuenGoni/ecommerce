@@ -5,6 +5,7 @@ import {
   Menu,
   Package,
   Truck,
+  UserCog,
   Warehouse,
   X,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/admin/inventario", label: "Inventario", icon: Warehouse },
   { to: "/admin/compras", label: "Compras", icon: Truck },
+  { to: "/admin/administradores", label: "Administradores", icon: UserCog },
 ];
 
 export function AdminLayout() {

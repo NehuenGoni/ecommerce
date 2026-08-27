@@ -2,6 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { env } from "../config/env.js";
 import {
+  acceptInvite,
   forgotPassword,
   login,
   logout,
@@ -12,6 +13,7 @@ import {
 } from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
+import { acceptInviteSchema } from "../validators/admin.validators.js";
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -45,3 +47,4 @@ authRouter.post(
   forgotPassword,
 );
 authRouter.post("/reset-password", authLimiter, validateBody(resetPasswordSchema), resetPassword);
+authRouter.post("/accept-invite", authLimiter, validateBody(acceptInviteSchema), acceptInvite);

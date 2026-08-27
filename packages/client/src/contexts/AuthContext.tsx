@@ -10,6 +10,13 @@ export interface RegisterInput {
   phone?: string;
 }
 
+export interface AcceptInviteInput {
+  token: string;
+  firstName: string;
+  lastName: string;
+  password: string;
+}
+
 interface AuthResponse {
   user: AuthUser;
   accessToken: string;
@@ -22,6 +29,7 @@ interface AuthContextValue {
   initializing: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (input: RegisterInput) => Promise<void>;
+  acceptInvite: (input: AcceptInviteInput) => Promise<void>;
   logout: () => Promise<void>;
   /** Sincroniza el user local después de editar perfil/direcciones (esos
    * endpoints ya devuelven el user actualizado, evita un refetch extra). */
@@ -65,6 +73,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(data.accessToken);
   }, []);
 
+  const acceptInvite = useCallback(async (input: AcceptInviteInput) => {
+    const data = await apiFetch<AuthResponse>("/auth/accept-invite", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    setUser(data.user);
+    setAccessToken(data.accessToken);
+  }, []);
+
   const logout = useCallback(async () => {
     await apiFetch("/auth/logout", { method: "POST" }).catch(() => {
       // si el logout en el server falla igual limpiamos la sesión local
@@ -78,8 +95,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ user, accessToken, initializing, login, register, logout, updateUser }),
-    [user, accessToken, initializing, login, register, logout, updateUser],
+    () => ({ user, accessToken, initializing, login, register, acceptInvite, logout, updateUser }),
+    [user, accessToken, initializing, login, register, acceptInvite, logout, updateUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
