@@ -1,9 +1,11 @@
 import { Types, type FilterQuery } from "mongoose";
 import type { AuthenticatedUser } from "../middleware/auth.js";
 import { Order, type OrderDocument, type OrderStatus, type PaymentStatus } from "../models/Order.js";
+import { User } from "../models/User.js";
 import { BadRequestError, NotFoundError } from "../utils/errors.js";
 import type { PaginatedResult } from "../utils/pagination.js";
 import type { MyOrdersQuery, OrderQuery } from "../validators/order.validators.js";
+import { sendOrderStatusChangeEmail } from "./email.service.js";
 import { restoreStock } from "./inventory.service.js";
 
 // Grafo de transiciones válidas: evita que un cambio de estado accidental
@@ -113,7 +115,8 @@ export async function changeOrderStatus(
   });
   await order.save();
 
-  // TODO: notificar al cliente por email (Resend) del cambio de estado.
+  const customer = await User.findById(order.customer).select("email");
+  if (customer) void sendOrderStatusChangeEmail(customer.email, order);
 
   return order;
 }

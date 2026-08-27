@@ -1,15 +1,27 @@
 import request from "supertest";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+
+vi.mock("../../services/email.service.js", () => ({
+  sendWelcomeEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+  sendOrderConfirmationEmail: vi.fn(),
+  sendOrderStatusChangeEmail: vi.fn(),
+}));
+
 import { createApp } from "../../app.js";
 import { Category } from "../../models/Category.js";
 import { Order, type OrderStatus, type PaymentMethod } from "../../models/Order.js";
 import { Product } from "../../models/Product.js";
+import * as emailService from "../../services/email.service.js";
 import { createAdminWithToken, createUserWithToken } from "../../test/authHelpers.js";
 import { clearTestDB, connectTestDB, disconnectTestDB } from "../../test/mongoMemory.js";
 
 const app = createApp("http://localhost:5173");
 
 beforeAll(connectTestDB);
+afterEach(() => {
+  vi.clearAllMocks();
+});
 afterEach(clearTestDB);
 afterAll(disconnectTestDB);
 
@@ -147,6 +159,11 @@ describe("PATCH /api/orders/:id/status", () => {
     const lastEntry = res.body.order.statusHistory.at(-1);
     expect(lastEntry.status).toBe("confirmed");
     expect(lastEntry.note).toBe("Pago verificado");
+
+    expect(emailService.sendOrderStatusChangeEmail).toHaveBeenCalledWith(
+      customer.email,
+      expect.objectContaining({ status: "confirmed" }),
+    );
   });
 
   it("rechaza una transición inválida (saltar pasos)", async () => {

@@ -6,11 +6,19 @@ vi.mock("../../services/mercadopago.service.js", () => ({
   getPaymentInfo: vi.fn(),
 }));
 
+vi.mock("../../services/email.service.js", () => ({
+  sendWelcomeEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+  sendOrderConfirmationEmail: vi.fn(),
+  sendOrderStatusChangeEmail: vi.fn(),
+}));
+
 import { createApp } from "../../app.js";
 import { Cart } from "../../models/Cart.js";
 import { Category } from "../../models/Category.js";
 import { Order } from "../../models/Order.js";
 import { Product } from "../../models/Product.js";
+import * as emailService from "../../services/email.service.js";
 import * as mpService from "../../services/mercadopago.service.js";
 import { createUserWithToken } from "../../test/authHelpers.js";
 import { clearTestDB, connectTestDB, disconnectTestDB } from "../../test/mongoMemory.js";
@@ -96,6 +104,11 @@ describe("POST /api/checkout", () => {
 
     const cart = await Cart.findOne({ user: user._id });
     expect(cart?.items).toEqual([]);
+
+    expect(emailService.sendOrderConfirmationEmail).toHaveBeenCalledWith(
+      user.email,
+      expect.objectContaining({ orderNumber: res.body.order.orderNumber }),
+    );
   });
 
   it("cobra el flat fee de envío en moto", async () => {

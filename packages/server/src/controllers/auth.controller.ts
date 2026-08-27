@@ -73,3 +73,14 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   }
   res.json({ user });
 });
+
+export const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  await authService.requestPasswordReset(req.body.email);
+  // Misma respuesta exista o no la cuenta: ver comentario en el service.
+  res.status(204).send();
+});
+
+export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  await authService.resetPassword(req.body.token, req.body.password);
+  res.status(204).send();
+});

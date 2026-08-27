@@ -1,9 +1,11 @@
 import { Cart } from "../models/Cart.js";
 import { Order, type OrderDocument, type OrderItem, type PaymentStatus } from "../models/Order.js";
 import { Product } from "../models/Product.js";
+import { User } from "../models/User.js";
 import { BadRequestError, ConflictError } from "../utils/errors.js";
 import { calculateShippingCost } from "../utils/shipping.js";
 import type { CheckoutInput } from "../validators/checkout.validators.js";
+import { sendOrderConfirmationEmail } from "./email.service.js";
 import { decrementStock } from "./inventory.service.js";
 import { createCheckoutPreference, getPaymentInfo } from "./mercadopago.service.js";
 
@@ -86,7 +88,8 @@ export async function checkout(userId: string, input: CheckoutInput): Promise<Ch
   cart.items = [];
   await cart.save();
 
-  // TODO: enviar email de confirmación de pedido (Resend) una vez integrado.
+  const customer = await User.findById(userId).select("email");
+  if (customer) void sendOrderConfirmationEmail(customer.email, order);
 
   if (input.paymentMethod === "mercadopago") {
     // A esta altura el pedido y el stock ya están confirmados: si Mercado

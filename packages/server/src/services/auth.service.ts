@@ -1,7 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import type { HydratedDocument } from "mongoose";
+import { env } from "../config/env.js";
+import { PasswordResetToken } from "../models/PasswordResetToken.js";
 import { RefreshToken } from "../models/RefreshToken.js";
 import { User, type UserDocument } from "../models/User.js";
+import { sendPasswordResetEmail, sendWelcomeEmail } from "./email.service.js";
 import { ConflictError, UnauthorizedError } from "../utils/errors.js";
 import {
   REFRESH_TOKEN_TTL_MS,
@@ -10,6 +13,12 @@ import {
   verifyRefreshToken,
 } from "../utils/jwt.js";
 import type { LoginInput, RegisterInput } from "../validators/auth.validators.js";
+
+const PASSWORD_RESET_TTL_MS = 60 * 60 * 1000;
+
+function hashResetToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
 
 interface TokenPair {
   accessToken: string;
@@ -51,6 +60,7 @@ export async function registerUser(input: RegisterInput): Promise<AuthResult> {
   });
 
   const tokens = await issueTokenPair(user);
+  void sendWelcomeEmail(user.email, user.firstName);
   return { user, ...tokens };
 }
 
@@ -104,4 +114,47 @@ export async function revokeRefreshToken(token: string): Promise<void> {
   } catch {
     // Token inválido, malformado o ya expirado: no hay nada que revocar.
   }
+}
+
+/**
+ * No revela si el email existe: responde igual (sin error) tanto si hay
+ * cuenta como si no, para no filtrar qué emails están registrados.
+ */
+export async function requestPasswordReset(email: string): Promise<void> {
+  const user = await User.findOne({ email });
+  if (!user) return;
+
+  const rawToken = randomBytes(32).toString("hex");
+  await PasswordResetToken.create({
+    user: user._id,
+    tokenHash: hashResetToken(rawToken),
+    expiresAt: new Date(Date.now() + PASSWORD_RESET_TTL_MS),
+  });
+
+  const resetUrl = `${env.CLIENT_URL}/restablecer-contrasena?token=${rawToken}`;
+  void sendPasswordResetEmail(user.email, resetUrl);
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const resetToken = await PasswordResetToken.findOne({ tokenHash: hashResetToken(token) });
+  if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {
+    throw new UnauthorizedError("El link de recuperación es inválido o venció");
+  }
+
+  const user = await User.findById(resetToken.user);
+  if (!user) {
+    throw new UnauthorizedError("El link de recuperación es inválido o venció");
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  resetToken.usedAt = new Date();
+  await resetToken.save();
+
+  // Un reset de contraseña es un evento de seguridad: cerramos todas las sesiones activas.
+  await RefreshToken.updateMany(
+    { user: user._id, revokedAt: { $exists: false } },
+    { revokedAt: new Date() },
+  );
 }

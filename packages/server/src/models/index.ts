@@ -3,6 +3,7 @@ export * from "./Category.js";
 export * from "./Counter.js";
 export * from "./Invoice.js";
 export * from "./Order.js";
+export * from "./PasswordResetToken.js";
 export * from "./Product.js";
 export * from "./RefreshToken.js";
 export * from "./StockMovement.js";

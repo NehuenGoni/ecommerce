@@ -1,8 +1,17 @@
 import type { Express } from "express";
 import request from "supertest";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock("../../services/email.service.js", () => ({
+  sendWelcomeEmail: vi.fn(),
+  sendPasswordResetEmail: vi.fn(),
+  sendOrderConfirmationEmail: vi.fn(),
+  sendOrderStatusChangeEmail: vi.fn(),
+}));
+
 import { createApp } from "../../app.js";
 import { User } from "../../models/User.js";
+import * as emailService from "../../services/email.service.js";
 import { clearTestDB, connectTestDB, disconnectTestDB } from "../../test/mongoMemory.js";
 
 // Se recrea en cada test: el rate limiter de /api/auth guarda estado en memoria
@@ -12,9 +21,17 @@ let app: Express;
 beforeAll(connectTestDB);
 beforeEach(() => {
   app = createApp("http://localhost:5173");
+  vi.clearAllMocks();
 });
 afterEach(clearTestDB);
 afterAll(disconnectTestDB);
+
+/** Extrae el token crudo de la URL que le pasamos a sendPasswordResetEmail (mockeado). */
+function getSentResetToken(): string {
+  const call = vi.mocked(emailService.sendPasswordResetEmail).mock.calls[0];
+  const resetUrl = call?.[1] ?? "";
+  return new URL(resetUrl).searchParams.get("token") ?? "";
+}
 
 const validRegisterPayload = {
   email: "cliente@example.com",
@@ -175,5 +192,109 @@ describe("GET /api/auth/me", () => {
   it("responde 401 con token inválido", async () => {
     const res = await request(app).get("/api/auth/me").set("Authorization", "Bearer invalido");
     expect(res.status).toBe(401);
+  });
+});
+
+describe("POST /api/auth/register: email de bienvenida", () => {
+  it("dispara el email de bienvenida al registrarse", async () => {
+    await request(app).post("/api/auth/register").send(validRegisterPayload);
+    expect(emailService.sendWelcomeEmail).toHaveBeenCalledWith(
+      validRegisterPayload.email,
+      validRegisterPayload.firstName,
+    );
+  });
+});
+
+describe("POST /api/auth/forgot-password", () => {
+  beforeEach(async () => {
+    await User.create({ ...validRegisterPayload });
+  });
+
+  it("responde 204 y envía el email si el usuario existe", async () => {
+    const res = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: validRegisterPayload.email });
+
+    expect(res.status).toBe(204);
+    expect(emailService.sendPasswordResetEmail).toHaveBeenCalledTimes(1);
+  });
+
+  it("responde 204 igual si el email no existe, sin enviar nada (no filtra qué cuentas existen)", async () => {
+    const res = await request(app)
+      .post("/api/auth/forgot-password")
+      .send({ email: "noexiste@example.com" });
+
+    expect(res.status).toBe(204);
+    expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("rechaza un email con formato inválido", async () => {
+    const res = await request(app).post("/api/auth/forgot-password").send({ email: "no-es-un-email" });
+    expect(res.status).toBe(400);
+  });
+});
+
+describe("POST /api/auth/reset-password", () => {
+  beforeEach(async () => {
+    await User.create({ ...validRegisterPayload });
+  });
+
+  it("permite fijar una nueva contraseña con un token válido, e invalida la sesión previa", async () => {
+    const agent = request.agent(app);
+
+    const loginRes = await agent
+      .post("/api/auth/login")
+      .send({ email: validRegisterPayload.email, password: validRegisterPayload.password });
+    expect(loginRes.status).toBe(200);
+
+    await request(app).post("/api/auth/forgot-password").send({ email: validRegisterPayload.email });
+    const token = getSentResetToken();
+    expect(token).not.toBe("");
+
+    const resetRes = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ token, password: "nuevaContraseña123" });
+    expect(resetRes.status).toBe(204);
+
+    // la sesión activa antes del reset queda revocada (evento de seguridad)
+    const refreshRes = await agent.post("/api/auth/refresh").send();
+    expect(refreshRes.status).toBe(401);
+
+    const loginOldRes = await request(app)
+      .post("/api/auth/login")
+      .send({ email: validRegisterPayload.email, password: validRegisterPayload.password });
+    expect(loginOldRes.status).toBe(401);
+
+    const loginNewRes = await request(app)
+      .post("/api/auth/login")
+      .send({ email: validRegisterPayload.email, password: "nuevaContraseña123" });
+    expect(loginNewRes.status).toBe(200);
+  });
+
+  it("rechaza un token inválido", async () => {
+    const res = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ token: "token-inventado", password: "nuevaContraseña123" });
+    expect(res.status).toBe(401);
+  });
+
+  it("rechaza reusar un token ya consumido", async () => {
+    await request(app).post("/api/auth/forgot-password").send({ email: validRegisterPayload.email });
+    const token = getSentResetToken();
+
+    await request(app).post("/api/auth/reset-password").send({ token, password: "primeraNueva123" });
+    const secondRes = await request(app)
+      .post("/api/auth/reset-password")
+      .send({ token, password: "segundaNueva123" });
+
+    expect(secondRes.status).toBe(401);
+  });
+
+  it("rechaza una contraseña nueva demasiado corta", async () => {
+    await request(app).post("/api/auth/forgot-password").send({ email: validRegisterPayload.email });
+    const token = getSentResetToken();
+
+    const res = await request(app).post("/api/auth/reset-password").send({ token, password: "corta" });
+    expect(res.status).toBe(400);
   });
 });

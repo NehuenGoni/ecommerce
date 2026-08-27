@@ -1,10 +1,23 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { env } from "../config/env.js";
-import { login, logout, me, refresh, register } from "../controllers/auth.controller.js";
+import {
+  forgotPassword,
+  login,
+  logout,
+  me,
+  refresh,
+  register,
+  resetPassword,
+} from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/auth.js";
 import { validateBody } from "../middleware/validate.js";
-import { loginSchema, registerSchema } from "../validators/auth.validators.js";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "../validators/auth.validators.js";
 
 // Límite estricto para frenar fuerza bruta sobre login/registro. Relajado en
 // test: el store del limiter es un singleton de módulo (correcto para un
@@ -25,5 +38,10 @@ authRouter.post("/refresh", refresh);
 authRouter.post("/logout", logout);
 authRouter.get("/me", authenticate, me);
 
-// TODO: /forgot-password y /reset-password, una vez integrado Resend para
-// el envío del email de recuperación.
+authRouter.post(
+  "/forgot-password",
+  authLimiter,
+  validateBody(forgotPasswordSchema),
+  forgotPassword,
+);
+authRouter.post("/reset-password", authLimiter, validateBody(resetPasswordSchema), resetPassword);

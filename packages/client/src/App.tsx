@@ -5,12 +5,14 @@ import { Layout } from "@/components/layout/Layout";
 import { CartPage } from "@/pages/CartPage";
 import { CatalogPage } from "@/pages/CatalogPage";
 import { CheckoutPage } from "@/pages/CheckoutPage";
+import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { Home } from "@/pages/Home";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFound } from "@/pages/NotFound";
 import { OrderConfirmationPage } from "@/pages/OrderConfirmationPage";
 import { ProductPage } from "@/pages/ProductPage";
 import { RegisterPage } from "@/pages/RegisterPage";
+import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { AddressesPage } from "@/pages/account/AddressesPage";
 import { OrderDetailPage } from "@/pages/account/OrderDetailPage";
 import { OrdersListPage } from "@/pages/account/OrdersListPage";
@@ -57,6 +59,8 @@ function App() {
         </Route>
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />
+        <Route path="olvide-contrasena" element={<ForgotPasswordPage />} />
+        <Route path="restablecer-contrasena" element={<ResetPasswordPage />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
