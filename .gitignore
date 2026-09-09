@@ -12,3 +12,6 @@ coverage/
 .vite/
 .vercel/
 .fly/
+
+.vercel
+.env*
