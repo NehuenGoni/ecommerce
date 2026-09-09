@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+**/build
+**/.env
+**/.env.*
+.git
+.vscode
+.vercel
+.fly
+*.log
+coverage
