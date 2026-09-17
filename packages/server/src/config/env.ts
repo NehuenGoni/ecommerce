@@ -15,6 +15,14 @@ const envSchema = z.object({
   CLIENT_URL: z.string().url().default("http://localhost:5173"),
   /** URL pública del server, usada para el webhook de Mercado Pago. Vacío en dev. */
   SERVER_URL: z.string().optional().default(""),
+  /** Sin API key, la extracción de facturas queda deshabilitada (no-op), igual que Resend. */
+  ANTHROPIC_API_KEY: z.string().optional().default(""),
+  ANTHROPIC_MODEL: z.string().optional().default("claude-sonnet-5"),
+  ANTHROPIC_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).optional().default("medium"),
+  /** Margen por defecto (%) para calcular el precio de venta a partir del costo de una factura importada. */
+  DEFAULT_MARGIN_PCT: z.coerce.number().min(0).optional().default(60),
+  /** Paso de redondeo hacia arriba para precios calculados, en centavos ($100 = 10000). */
+  PRICE_ROUNDING_STEP: z.coerce.number().int().min(1).optional().default(10000),
 });
 
 export type Env = z.infer<typeof envSchema>;
