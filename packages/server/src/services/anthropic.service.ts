@@ -16,7 +16,7 @@ import {
  * forma interna de `messages.parse`.
  */
 
-type SupportedMimeType = "application/pdf" | "image/jpeg" | "image/png" | "image/webp";
+export type SupportedMimeType = "application/pdf" | "image/jpeg" | "image/png" | "image/webp";
 
 export interface ExtractInvoiceInput {
   buffer: Buffer;
@@ -126,4 +126,16 @@ export async function extractInvoice(input: ExtractInvoiceInput): Promise<Extrac
     model: response.model,
     promptVersion: PROMPT_VERSION,
   };
+}
+
+/**
+ * Clasifica si vale la pena reintentar un error de `extractInvoice`. Vive
+ * acá (y no en invoiceExtraction.service.ts) para que ese orquestador nunca
+ * tenga que importar el SDK -- solo este archivo lo conoce. Un error de red
+ * o de rate limit es transitorio y se resuelve reintentando; un
+ * BadRequestError (archivo corrupto, demasiadas páginas) no se arregla
+ * reintentando lo mismo.
+ */
+export function isRetryableExtractionError(err: unknown): boolean {
+  return err instanceof Anthropic.RateLimitError || err instanceof Anthropic.APIConnectionError;
 }
