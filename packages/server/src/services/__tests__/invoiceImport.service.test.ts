@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { Types } from "mongoose";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { Category } from "../../models/Category.js";
@@ -6,7 +7,7 @@ import { SupplierInvoiceImport, type SupplierInvoiceImportLine } from "../../mod
 import { SupplierPurchase } from "../../models/SupplierPurchase.js";
 import { createUserWithToken } from "../../test/authHelpers.js";
 import { clearTestDB, connectTestDB, disconnectTestDB } from "../../test/mongoMemory.js";
-import { applyImport } from "../invoiceImport.service.js";
+import { applyImport, createImport } from "../invoiceImport.service.js";
 
 beforeAll(connectTestDB);
 afterEach(clearTestDB);
@@ -120,6 +121,61 @@ async function buildImportDoc(overrides: Record<string, unknown> = {}) {
     ...overrides,
   });
 }
+
+describe("createImport", () => {
+  it("crea la importación con el hash del archivo, en estado uploaded", async () => {
+    const { user } = await createUserWithToken();
+    const buffer = Buffer.from("contenido de prueba");
+
+    const doc = await createImport(
+      { buffer, mimeType: "application/pdf", originalName: "factura.pdf", sizeBytes: buffer.length, supplier: "Proveedor X" },
+      user._id.toString(),
+    );
+
+    expect(doc.status).toBe("uploaded");
+    expect(doc.supplier).toBe("Proveedor X");
+    expect(doc.file.sizeBytes).toBe(buffer.length);
+    expect(doc.file.sha256).toBe(createHash("sha256").update(buffer).digest("hex"));
+  });
+
+  it("rechaza el mismo contenido si ya existe una importación en un estado no terminal", async () => {
+    // Se arma el documento "ya existente" directo por el modelo (no vía createImport): ese helper
+    // dispara su propia extracción en segundo plano, que -- sin ANTHROPIC_API_KEY en test -- corre
+    // y reintenta lo bastante rápido como para pisar cualquier status que el test fije a mano.
+    const { user } = await createUserWithToken();
+    const buffer = Buffer.from("misma factura");
+    const sha256 = createHash("sha256").update(buffer).digest("hex");
+    await SupplierInvoiceImport.create({
+      file: { mimeType: "application/pdf", sizeBytes: buffer.length, sha256 },
+      status: "review",
+      createdBy: user._id,
+    });
+
+    await expect(
+      createImport(
+        { buffer, mimeType: "application/pdf", originalName: "b.pdf", sizeBytes: buffer.length },
+        user._id.toString(),
+      ),
+    ).rejects.toThrow();
+  });
+
+  it("permite subir el mismo contenido si la importación anterior está failed o discarded", async () => {
+    const { user } = await createUserWithToken();
+    const buffer = Buffer.from("factura que falló");
+    const sha256 = createHash("sha256").update(buffer).digest("hex");
+    await SupplierInvoiceImport.create({
+      file: { mimeType: "application/pdf", sizeBytes: buffer.length, sha256 },
+      status: "failed",
+      createdBy: user._id,
+    });
+
+    const doc = await createImport(
+      { buffer, mimeType: "application/pdf", originalName: "b.pdf", sizeBytes: buffer.length },
+      user._id.toString(),
+    );
+    expect(doc.status).toBe("uploaded");
+  });
+});
 
 describe("applyImport (camino feliz)", () => {
   it("crea la compra, mueve stock y actualiza costo y precio de la variante", async () => {

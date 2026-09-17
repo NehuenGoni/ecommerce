@@ -179,8 +179,10 @@ async function applyExtractionSuccess(
   result: ExtractInvoiceResult,
   lines: SupplierInvoiceImportLine[],
 ): Promise<void> {
+  // Guardia de estado: si mientras Claude respondía el admin descartó la importación (discardImport
+  // permite descartar desde "extracting"), este resultado ya tardío no debe resucitarla.
   await SupplierInvoiceImport.updateOne(
-    { _id: doc._id },
+    { _id: doc._id, status: "extracting" },
     {
       $set: {
         status: "review",
@@ -211,8 +213,10 @@ async function applyExtractionSuccess(
 
 async function applyExtractionFailure(importId: string, err: unknown): Promise<void> {
   const message = err instanceof Error ? err.message : String(err);
+  // Misma guardia que applyExtractionSuccess: no pisar un estado al que se pasó por otro lado
+  // (ej. discarded) mientras este intento fallaba.
   await SupplierInvoiceImport.updateOne(
-    { _id: importId },
+    { _id: importId, status: "extracting" },
     { $set: { status: "failed", "extraction.completedAt": new Date(), "extraction.lastError": message } },
   );
 }

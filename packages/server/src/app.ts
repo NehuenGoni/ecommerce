@@ -4,6 +4,7 @@ import express, { type Express, type NextFunction, type Request, type Response }
 import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import helmet from "helmet";
+import { MulterError } from "multer";
 import { mercadoPagoWebhook } from "./controllers/checkout.controller.js";
 import { adminRouter } from "./routes/admin.routes.js";
 import { authRouter } from "./routes/auth.routes.js";
@@ -13,6 +14,7 @@ import { checkoutRouter } from "./routes/checkout.routes.js";
 import { inventoryRouter } from "./routes/inventory.routes.js";
 import { orderRouter } from "./routes/order.routes.js";
 import { productRouter } from "./routes/product.routes.js";
+import { supplierInvoiceImportRouter } from "./routes/supplierInvoiceImport.routes.js";
 import { supplierPurchaseRouter } from "./routes/supplierPurchase.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
 import { userRouter } from "./routes/user.routes.js";
@@ -64,12 +66,21 @@ export function createApp(clientUrl: string): Express {
   app.use("/api/orders", orderRouter);
   app.use("/api/inventory", inventoryRouter);
   app.use("/api/supplier-purchases", supplierPurchaseRouter);
+  app.use("/api/supplier-invoices", supplierInvoiceImportRouter);
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Ruta no encontrada" });
   });
 
   app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+    if (err instanceof MulterError) {
+      const message =
+        err.code === "LIMIT_FILE_SIZE"
+          ? "El archivo supera el tamaño máximo permitido (15MB)"
+          : "No se pudo procesar el archivo subido";
+      res.status(400).json({ error: message });
+      return;
+    }
     if (err instanceof AppError) {
       res.status(err.statusCode).json({ error: err.message });
       return;
