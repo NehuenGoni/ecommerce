@@ -29,7 +29,10 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     ...rest,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      // Con FormData (subida de archivos) el boundary lo tiene que poner el
+      // browser: si forzamos este header acá, el multipart queda sin límite
+      // y el server no puede parsearlo.
+      ...(rest.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       ...headers,
     },

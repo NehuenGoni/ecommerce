@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Menu,
   Package,
+  ScanLine,
   Truck,
   UserCog,
   Warehouse,
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/admin/inventario", label: "Inventario", icon: Warehouse },
   { to: "/admin/compras", label: "Compras", icon: Truck },
+  { to: "/admin/compras/importaciones", label: "Importar factura", icon: ScanLine },
   { to: "/admin/administradores", label: "Administradores", icon: UserCog },
 ];
 
