@@ -3,6 +3,7 @@ import { Product } from "../models/Product.js";
 import {
   SupplierPurchase,
   type SupplierPurchaseDocument,
+  type SupplierPurchaseHydratedDocument,
   type SupplierPurchaseItem,
 } from "../models/SupplierPurchase.js";
 import type { PaginatedResult } from "../utils/pagination.js";
@@ -54,7 +55,7 @@ export async function getPurchaseById(id: string): Promise<SupplierPurchaseDocum
 export async function createPurchase(
   input: CreatePurchaseInput,
   createdBy: string,
-): Promise<SupplierPurchaseDocument> {
+): Promise<SupplierPurchaseHydratedDocument> {
   const productIds = [...new Set(input.items.map((item) => item.product))];
   const products = await Product.find({ _id: { $in: productIds } });
   const productById = new Map(products.map((p) => [p._id.toString(), p]));
