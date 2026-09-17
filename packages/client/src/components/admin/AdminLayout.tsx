@@ -1,4 +1,5 @@
 import {
+  Building2,
   ClipboardList,
   FolderTree,
   LayoutDashboard,
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/admin/productos", label: "Productos", icon: Package },
   { to: "/admin/categorias", label: "Categorías", icon: FolderTree },
+  { to: "/admin/proveedores", label: "Proveedores", icon: Building2 },
   { to: "/admin/pedidos", label: "Pedidos", icon: ClipboardList },
   { to: "/admin/inventario", label: "Inventario", icon: Warehouse },
   { to: "/admin/compras", label: "Compras", icon: Truck },

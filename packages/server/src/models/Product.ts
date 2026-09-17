@@ -29,6 +29,7 @@ export interface ProductDocument {
   description: string;
   shortDescription: string;
   category: Types.ObjectId;
+  supplier: Types.ObjectId | null;
   brand: string;
   variants: ProductVariant[];
   images: ProductImage[];
@@ -70,6 +71,7 @@ const productSchema = new Schema<ProductDocument>(
     description: { type: String, default: "" },
     shortDescription: { type: String, default: "" },
     category: { type: Schema.Types.ObjectId, ref: "Category", required: true },
+    supplier: { type: Schema.Types.ObjectId, ref: "Supplier", default: null },
     brand: { type: String, default: "" },
     variants: {
       type: [productVariantSchema],

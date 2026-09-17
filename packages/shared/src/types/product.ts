@@ -29,6 +29,7 @@ export interface Product extends Timestamps {
   description: string;
   shortDescription: string;
   category: ID;
+  supplier: ID | null;
   brand: string;
   variants: ProductVariant[];
   images: ProductImage[];

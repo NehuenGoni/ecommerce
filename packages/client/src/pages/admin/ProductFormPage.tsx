@@ -4,6 +4,7 @@ import { ProductForm, type ProductFormValues } from "@/components/admin/ProductF
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCategories } from "@/hooks/admin/useAdminCategories";
+import { useAdminSuppliers } from "@/hooks/admin/useAdminSuppliers";
 import { apiFetch } from "@/lib/api";
 import type { ProductListItem } from "@/types/catalog";
 import { NotFound } from "@/pages/NotFound";
@@ -13,6 +14,7 @@ export function ProductFormPage() {
   const isEditing = Boolean(id);
   const { accessToken } = useAuth();
   const { categories, loading: loadingCategories } = useAdminCategories();
+  const { suppliers, loading: loadingSuppliers } = useAdminSuppliers();
   const navigate = useNavigate();
 
   const [product, setProduct] = useState<ProductListItem | null>(null);
@@ -38,7 +40,7 @@ export function ProductFormPage() {
   }
 
   if (isEditing && notFound) return <NotFound />;
-  if (isEditing && (loading || loadingCategories || !product)) {
+  if (isEditing && (loading || loadingCategories || loadingSuppliers || !product)) {
     return <Skeleton className="h-96 w-full" />;
   }
 
@@ -55,6 +57,7 @@ export function ProductFormPage() {
         <ProductForm
           initial={product ?? undefined}
           categories={categories}
+          suppliers={suppliers}
           submitLabel={isEditing ? "Guardar cambios" : "Crear producto"}
           onSubmit={handleSubmit}
         />

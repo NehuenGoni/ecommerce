@@ -14,6 +14,7 @@ import { checkoutRouter } from "./routes/checkout.routes.js";
 import { inventoryRouter } from "./routes/inventory.routes.js";
 import { orderRouter } from "./routes/order.routes.js";
 import { productRouter } from "./routes/product.routes.js";
+import { supplierRouter } from "./routes/supplier.routes.js";
 import { supplierInvoiceImportRouter } from "./routes/supplierInvoiceImport.routes.js";
 import { supplierPurchaseRouter } from "./routes/supplierPurchase.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
@@ -60,6 +61,7 @@ export function createApp(clientUrl: string): Express {
   app.use("/api/users", userRouter);
   app.use("/api/categories", categoryRouter);
   app.use("/api/products", productRouter);
+  app.use("/api/suppliers", supplierRouter);
   app.use("/api/uploads", uploadRouter);
   app.use("/api/cart", cartRouter);
   app.use("/api/checkout", checkoutRouter);

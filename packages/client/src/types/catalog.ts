@@ -1,4 +1,4 @@
-import type { Category, Product } from "@growshop/shared";
+import type { Category, Product, Supplier } from "@growshop/shared";
 
 /**
  * Los endpoints de listado/detalle de productos populan `category` con
@@ -8,6 +8,10 @@ import type { Category, Product } from "@growshop/shared";
  */
 export type CategoryRef = Pick<Category, "_id" | "name" | "slug">;
 
-export interface ProductListItem extends Omit<Product, "category"> {
+/** `supplier` viene poblado con {_id, name}, y está ausente (no null) cuando quien pide no es admin. */
+export type SupplierRef = Pick<Supplier, "_id" | "name">;
+
+export interface ProductListItem extends Omit<Product, "category" | "supplier"> {
   category: CategoryRef;
+  supplier?: SupplierRef | null;
 }

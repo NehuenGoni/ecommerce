@@ -30,6 +30,7 @@ import { ProductFormPage as AdminProductFormPage } from "@/pages/admin/ProductFo
 import { ProductsListPage as AdminProductsListPage } from "@/pages/admin/ProductsListPage";
 import { PurchaseFormPage as AdminPurchaseFormPage } from "@/pages/admin/PurchaseFormPage";
 import { PurchasesListPage as AdminPurchasesListPage } from "@/pages/admin/PurchasesListPage";
+import { SuppliersPage as AdminSuppliersPage } from "@/pages/admin/SuppliersPage";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path="productos/nuevo" element={<AdminProductFormPage />} />
           <Route path="productos/:id/editar" element={<AdminProductFormPage />} />
           <Route path="categorias" element={<AdminCategoriesPage />} />
+          <Route path="proveedores" element={<AdminSuppliersPage />} />
           <Route path="pedidos" element={<AdminOrdersListPage />} />
           <Route path="pedidos/:id" element={<AdminOrderDetailPage />} />
           <Route path="inventario" element={<AdminInventoryPage />} />

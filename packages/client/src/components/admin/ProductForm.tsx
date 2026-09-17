@@ -1,4 +1,4 @@
-import type { Category, ProductImage } from "@growshop/shared";
+import type { Category, ProductImage, Supplier } from "@growshop/shared";
 import { type FormEvent, useState } from "react";
 import { VariantsEditor, type VariantFormValue } from "@/components/admin/VariantsEditor";
 import { ImagesEditor } from "@/components/admin/ImagesEditor";
@@ -13,6 +13,7 @@ export interface ProductFormValues {
   description: string;
   shortDescription: string;
   category: string;
+  supplier: string | null;
   brand: string;
   variants: VariantFormValue[];
   images: ProductImage[];
@@ -24,14 +25,16 @@ export interface ProductFormValues {
 interface ProductFormProps {
   initial?: ProductListItem;
   categories: Category[];
+  suppliers: Supplier[];
   submitLabel: string;
   onSubmit: (values: ProductFormValues) => Promise<void>;
 }
 
-export function ProductForm({ initial, categories, submitLabel, onSubmit }: ProductFormProps) {
+export function ProductForm({ initial, categories, suppliers, submitLabel, onSubmit }: ProductFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [category, setCategory] = useState(initial?.category._id ?? "");
+  const [supplier, setSupplier] = useState(initial?.supplier?._id ?? "");
   const [brand, setBrand] = useState(initial?.brand ?? "");
   const [shortDescription, setShortDescription] = useState(initial?.shortDescription ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -60,6 +63,7 @@ export function ProductForm({ initial, categories, submitLabel, onSubmit }: Prod
         description,
         shortDescription,
         category,
+        supplier: supplier || null,
         brand,
         variants,
         images,
@@ -114,6 +118,18 @@ export function ProductForm({ initial, categories, submitLabel, onSubmit }: Prod
           {categories.map((cat) => (
             <option key={cat._id} value={cat._id}>
               {cat.parent ? `— ${cat.name}` : cat.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={supplier}
+          onChange={(e) => setSupplier(e.target.value)}
+          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
+        >
+          <option value="">Sin proveedor</option>
+          {suppliers.map((s) => (
+            <option key={s._id} value={s._id}>
+              {s.name}
             </option>
           ))}
         </select>

@@ -2,12 +2,32 @@ import mongoose, { type PipelineStage } from "mongoose";
 import { Category } from "../models/Category.js";
 import { Order } from "../models/Order.js";
 import { Product, type ProductDocument, type ProductVariant } from "../models/Product.js";
+import { Supplier } from "../models/Supplier.js";
 import { ConflictError, NotFoundError } from "../utils/errors.js";
 import type {
   CreateProductInput,
   ProductQuery,
   UpdateProductInput,
 } from "../validators/product.validators.js";
+
+// `isAdmin` equivale hoy a `includeInactive` (ambos vienen de
+// `req.user?.role === "admin"` en product.controller.ts): se reusa ese mismo
+// flag para decidir si se exponen datos internos (supplier, costPrice).
+function stripAdminOnlyFields(product: ProductDocument, isAdmin: boolean): ProductDocument {
+  if (isAdmin) return product;
+
+  const plain = (
+    typeof (product as unknown as { toObject?: unknown }).toObject === "function"
+      ? (product as unknown as { toObject: () => ProductDocument }).toObject()
+      : product
+  ) as ProductDocument;
+
+  const { supplier: _supplier, ...rest } = plain;
+  return {
+    ...rest,
+    variants: rest.variants.map(({ costPrice: _costPrice, ...variant }) => variant as ProductVariant),
+  } as ProductDocument;
+}
 
 async function resolveCategoryFilter(category: string): Promise<mongoose.Types.ObjectId | null> {
   if (mongoose.isValidObjectId(category)) {
@@ -91,8 +111,18 @@ export async function listProducts(
   const total = result?.totalCount[0]?.count ?? 0;
 
   await Product.populate(items, { path: "category", select: "name slug" });
+  if (includeInactive) {
+    await Product.populate(items, { path: "supplier", select: "name" });
+  }
+  const visibleItems = items.map((item) => stripAdminOnlyFields(item, includeInactive));
 
-  return { items, total, page: query.page, limit: query.limit, pages: Math.ceil(total / query.limit) };
+  return {
+    items: visibleItems,
+    total,
+    page: query.page,
+    limit: query.limit,
+    pages: Math.ceil(total / query.limit),
+  };
 }
 
 export async function getProductByIdOrSlug(idOrSlug: string, includeInactive: boolean) {
@@ -103,17 +133,27 @@ export async function getProductByIdOrSlug(idOrSlug: string, includeInactive: bo
     filter.isActive = true;
   }
 
-  const product = await Product.findOne(filter).populate("category", "name slug");
+  const productQuery = Product.findOne(filter).populate("category", "name slug");
+  if (includeInactive) {
+    productQuery.populate("supplier", "name");
+  }
+  const product = await productQuery;
   if (!product) {
     throw new NotFoundError("Producto no encontrado");
   }
-  return product;
+  return stripAdminOnlyFields(product, includeInactive);
 }
 
 export async function createProduct(input: CreateProductInput) {
   const category = await Category.findById(input.category);
   if (!category) {
     throw new NotFoundError("Categoría no encontrada");
+  }
+  if (input.supplier) {
+    const supplier = await Supplier.findById(input.supplier);
+    if (!supplier) {
+      throw new NotFoundError("Proveedor no encontrado");
+    }
   }
   return Product.create(input);
 }
@@ -128,6 +168,12 @@ export async function updateProduct(id: string, input: UpdateProductInput) {
     const category = await Category.findById(input.category);
     if (!category) {
       throw new NotFoundError("Categoría no encontrada");
+    }
+  }
+  if (input.supplier) {
+    const supplier = await Supplier.findById(input.supplier);
+    if (!supplier) {
+      throw new NotFoundError("Proveedor no encontrado");
     }
   }
 
