@@ -8,5 +8,6 @@ export * from "./PasswordResetToken.js";
 export * from "./Product.js";
 export * from "./RefreshToken.js";
 export * from "./StockMovement.js";
+export * from "./SupplierInvoiceImport.js";
 export * from "./SupplierPurchase.js";
 export * from "./User.js";

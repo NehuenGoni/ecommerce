@@ -4,6 +4,7 @@ export * from "./types/product.js";
 export * from "./types/user.js";
 export * from "./types/order.js";
 export * from "./types/invoice.js";
+export * from "./types/supplierInvoiceImport.js";
 export * from "./types/supplierPurchase.js";
 export * from "./types/stockMovement.js";
 export * from "./utils/money.js";
