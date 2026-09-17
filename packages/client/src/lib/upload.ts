@@ -8,7 +8,7 @@ interface CloudinarySignature {
   cloudName: string;
 }
 
-export type UploadContext = "products" | "receipts";
+export type UploadContext = "products" | "receipts" | "categories";
 
 /**
  * Sube una imagen directo a Cloudinary (subida firmada, sin pasar por

@@ -51,7 +51,7 @@ export function AcceptInvitePage() {
   return (
     <div className="mx-auto max-w-sm px-4 py-16">
       <h1 className="font-display text-3xl font-bold">Creá tu cuenta de administrador</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Te invitaron a administrar Growshop.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Te invitaron a administrar El Gran Grow.</p>
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">

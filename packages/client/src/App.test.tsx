@@ -20,7 +20,7 @@ function renderApp(initialEntries: string[] = ["/"]) {
 describe("App", () => {
   it("renderiza el header con el nombre de la marca", () => {
     renderApp();
-    expect(screen.getAllByText("Growshop").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("El Gran Grow").length).toBeGreaterThan(0);
   });
 
   it("renderiza la home en la ruta raíz", () => {

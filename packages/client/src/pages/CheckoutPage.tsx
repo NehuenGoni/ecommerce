@@ -15,7 +15,7 @@ interface CheckoutOrderResponse {
   paymentRedirectUrl?: string;
 }
 
-const SHIPPING_METHODS: ShippingMethod[] = ["moto", "pickup", "mercadoenvios"];
+const SHIPPING_METHODS: ShippingMethod[] = ["moto", "mercadoenvios"];
 
 export function CheckoutPage() {
   const { user, accessToken, initializing } = useAuth();
@@ -268,11 +268,11 @@ export function CheckoutPage() {
                   checked={paymentMethod === "cash"}
                   onChange={() => setPaymentMethod("cash")}
                 />
-                Efectivo en entrega/retiro
+                Efectivo en entrega
               </label>
               {cashDisabled && (
                 <p className="text-xs text-muted-foreground">
-                  El pago en efectivo solo está disponible con envío en moto o retiro en punto.
+                  El pago en efectivo solo está disponible con envío en moto.
                 </p>
               )}
             </div>

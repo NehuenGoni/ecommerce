@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { env } from "../config/env.js";
 import type { OrderDocument, OrderStatus } from "../models/Order.js";
 
-const FROM = "Growshop <pedidos@growshop.local>";
+const FROM = "El Gran Grow <pedidos@growshop.local>";
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "Pendiente",
@@ -52,7 +52,7 @@ function layout(title: string, bodyHtml: string): string {
     <div style="font-family: system-ui, sans-serif; max-width: 480px; margin: 0 auto; color: #2b2a25;">
       <h1 style="font-size: 20px; margin-bottom: 4px;">${title}</h1>
       ${bodyHtml}
-      <p style="margin-top: 32px; font-size: 12px; color: #8a8779;">Growshop — Insumos de cultivo para GBA Norte.</p>
+      <p style="margin-top: 32px; font-size: 12px; color: #8a8779;">El Gran Grow — Insumos de cultivo para GBA.</p>
     </div>
   `;
 }
@@ -60,9 +60,9 @@ function layout(title: string, bodyHtml: string): string {
 export async function sendWelcomeEmail(to: string, firstName: string): Promise<void> {
   const html = layout(
     `¡Bienvenida/o, ${firstName}!`,
-    `<p>Ya podés armar tu pedido y elegir cómo retirarlo o recibirlo.</p>`,
+    `<p>Ya podés armar tu pedido y elegir cómo recibirlo: envío por moto o Mercado Envíos.</p>`,
   );
-  await sendEmail(to, "Bienvenido a Growshop", html);
+  await sendEmail(to, "Bienvenido a El Gran Grow", html);
 }
 
 export async function sendOrderConfirmationEmail(to: string, order: OrderDocument): Promise<void> {
@@ -102,32 +102,32 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
       <p>Si no fuiste vos, podés ignorar este email.</p>
     `,
   );
-  await sendEmail(to, "Restablecer tu contraseña de Growshop", html);
+  await sendEmail(to, "Restablecer tu contraseña de El Gran Grow", html);
 }
 
 export async function sendAdminInviteEmail(to: string, acceptUrl: string): Promise<void> {
   const html = layout(
-    "Te invitaron a administrar Growshop",
+    "Te invitaron a administrar El Gran Grow",
     `
       <p>Te dieron acceso de administrador. Este link para crear tu cuenta vence en 7 días:</p>
       <p><a href="${acceptUrl}">${acceptUrl}</a></p>
     `,
   );
-  await sendEmail(to, "Invitación a administrar Growshop", html);
+  await sendEmail(to, "Invitación a administrar El Gran Grow", html);
 }
 
 export async function sendAdminPromotedEmail(to: string): Promise<void> {
   const html = layout(
     "Ahora sos administrador",
-    `<p>Te dieron acceso de administrador en Growshop. Entrá con tu cuenta de siempre.</p>`,
+    `<p>Te dieron acceso de administrador en El Gran Grow. Entrá con tu cuenta de siempre.</p>`,
   );
-  await sendEmail(to, "Ahora sos administrador en Growshop", html);
+  await sendEmail(to, "Ahora sos administrador en El Gran Grow", html);
 }
 
 export async function sendAdminRevokedEmail(to: string): Promise<void> {
   const html = layout(
     "Tu acceso de administrador fue revocado",
-    `<p>Ya no tenés acceso de administrador en Growshop.</p>`,
+    `<p>Ya no tenés acceso de administrador en El Gran Grow.</p>`,
   );
   await sendEmail(to, "Tu acceso de administrador fue revocado", html);
 }

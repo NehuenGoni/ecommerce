@@ -1,6 +1,8 @@
 import type { Category } from "@growshop/shared";
-import { type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { uploadImage } from "@/lib/upload";
 
 export interface CategoryFormValues {
   name: string;
@@ -22,15 +24,41 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ initial, rootOptions, submitLabel, onSubmit, onCancel }: CategoryFormProps) {
+  const { accessToken } = useAuth();
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState(initial?.image ?? "");
+  const [externalUrl, setExternalUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [parent, setParent] = useState(initial?.parent ?? "");
   const [order, setOrder] = useState(initial?.order ?? 0);
   const [isActive, setIsActive] = useState(initial?.isActive ?? true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !accessToken) return;
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadImage(file, accessToken, "categories");
+      setImage(url);
+    } catch {
+      setUploadError("No pudimos subir la imagen. Probá de nuevo.");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  }
+
+  function addExternalUrl() {
+    if (!externalUrl.trim()) return;
+    setImage(externalUrl.trim());
+    setExternalUrl("");
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -75,12 +103,44 @@ export function CategoryForm({ initial, rootOptions, submitLabel, onSubmit, onCa
         onChange={(e) => setDescription(e.target.value)}
         className="rounded-md border border-border bg-background px-3 py-2 text-sm"
       />
-      <input
-        placeholder="URL de imagen (opcional)"
-        value={image}
-        onChange={(e) => setImage(e.target.value)}
-        className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-      />
+      <div className="flex flex-col gap-2">
+        {image && (
+          <div className="w-32 rounded-lg border border-border p-2">
+            <img src={image} alt="" className="h-24 w-full rounded-md object-cover" />
+            <button
+              type="button"
+              onClick={() => setImage("")}
+              className="mt-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive"
+            >
+              Quitar
+            </button>
+          </div>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-sm font-semibold">
+            <span className="inline-flex cursor-pointer items-center rounded-md border border-border px-3 py-2 hover:bg-muted">
+              {uploading ? "Subiendo..." : "Subir imagen"}
+            </span>
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              disabled={uploading}
+              onChange={(e) => void handleFileUpload(e)}
+            />
+          </label>
+          <input
+            placeholder="o pegá una URL externa"
+            value={externalUrl}
+            onChange={(e) => setExternalUrl(e.target.value)}
+            className="min-w-[12rem] flex-1 rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+          <Button type="button" variant="outline" size="sm" onClick={addExternalUrl}>
+            Agregar URL
+          </Button>
+        </div>
+        {uploadError && <p className="text-sm font-semibold text-destructive">{uploadError}</p>}
+      </div>
       <div className="grid grid-cols-2 gap-3">
         <select
           value={parent ?? ""}

@@ -19,6 +19,6 @@ export function estimateShippingCost(method: ShippingMethod): number {
 
 export const SHIPPING_METHOD_LABELS: Record<ShippingMethod, string> = {
   mercadoenvios: "Mercado Envíos",
-  moto: "Envío por moto (GBA Norte)",
+  moto: "Envío por moto (GBA)",
   pickup: "Retiro en punto",
 };

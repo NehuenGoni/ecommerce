@@ -8,18 +8,20 @@ import type { UploadContext } from "../validators/upload.validators.js";
 const FOLDER_BY_CONTEXT: Record<UploadContext, string> = {
   products: "growshop/products",
   receipts: "growshop/receipts",
+  categories: "growshop/categories",
 };
 
 /**
  * El navegador sube el archivo directamente a Cloudinary (no pasa por
  * nuestro servidor). Acá solo generamos la firma con el api_secret, que
- * nunca se expone al frontend. Imágenes de producto: solo admin. Comprobantes
- * de transferencia: cualquier usuario autenticado, para su propio pedido.
+ * nunca se expone al frontend. Imágenes de producto y de categoría: solo
+ * admin. Comprobantes de transferencia: cualquier usuario autenticado,
+ * para su propio pedido.
  */
 export const getCloudinarySignature = asyncHandler(async (req: Request, res: Response) => {
   const { context } = req.body as { context: UploadContext };
 
-  if (context === "products" && req.user?.role !== "admin") {
+  if ((context === "products" || context === "categories") && req.user?.role !== "admin") {
     throw new ForbiddenError();
   }
 

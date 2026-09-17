@@ -5,9 +5,9 @@ export function Footer() {
     <footer className="border-t border-border bg-card">
       <div className="mx-auto max-w-6xl px-4 py-12 grid gap-10 sm:grid-cols-3">
         <div>
-          <p className="font-display text-lg font-bold">Growshop</p>
+          <p className="font-display text-lg font-bold">El Gran Grow</p>
           <p className="mt-2 text-sm text-muted-foreground max-w-[28ch]">
-            Insumos de cultivo para GBA Norte. Envío por moto o retiro en punto.
+            Insumos de cultivo para GBA. Envío por moto o Mercado Envíos.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export function Footer() {
 
       <div className="border-t border-border">
         <div className="mx-auto max-w-6xl px-4 py-4 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Growshop. Todos los derechos reservados.
+          © {new Date().getFullYear()} El Gran Grow. Todos los derechos reservados.
         </div>
       </div>
     </footer>

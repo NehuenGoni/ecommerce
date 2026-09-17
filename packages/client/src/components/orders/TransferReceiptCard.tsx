@@ -39,7 +39,7 @@ export function TransferReceiptCard({ order, accessToken, onReceiptSent }: Trans
     <div className="rounded-xl border border-border bg-card p-5">
       <h2 className="font-display text-lg font-bold">Datos para transferir</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        CBU/Alias: <span className="font-mono">completar con los datos bancarios de Growshop</span>
+        CBU/Alias: <span className="font-mono">completar con los datos bancarios de El Gran Grow</span>
         <br />
         Titular: <span className="font-mono">completar</span>
       </p>

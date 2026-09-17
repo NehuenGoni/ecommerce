@@ -6,12 +6,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
+import { CategoriesMenu } from "./CategoriesMenu";
 import { SearchBox } from "./SearchBox";
 import { ThemeToggle } from "./ThemeToggle";
 
 function Logo() {
   return (
-    <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="Growshop, ir al inicio">
+    <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="El Gran Grow, ir al inicio">
       <svg viewBox="0 0 40 40" className="h-8 w-8" aria-hidden="true">
         <path
           d="M20 36C20 36 8 30 8 18C8 10.268 13.268 5 20 5C26.732 5 32 10.268 32 18C32 30 20 36 20 36Z"
@@ -31,7 +32,7 @@ function Logo() {
           strokeLinecap="round"
         />
       </svg>
-      <span className="font-display text-lg font-bold tracking-tight">Growshop</span>
+      <span className="font-display text-lg font-bold tracking-tight">El Gran Grow</span>
     </Link>
   );
 }
@@ -48,20 +49,7 @@ export function Header() {
         <Logo />
 
         <nav className="hidden md:flex items-center gap-1">
-          {categories.map((category) => (
-            <NavLink
-              key={category._id}
-              to={`/categoria/${category.slug}`}
-              className={({ isActive }) =>
-                cn(
-                  "rounded-full px-3.5 py-2 text-sm font-semibold transition-colors hover:bg-muted",
-                  isActive && "bg-muted",
-                )
-              }
-            >
-              {category.name}
-            </NavLink>
-          ))}
+          <CategoriesMenu categories={categories} />
         </nav>
 
         <SearchBox />
