@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, setSessionHandlers } from "@/lib/api";
 import type { AuthUser } from "@/types/auth";
 
 export interface RegisterInput {
@@ -53,6 +53,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // no había una sesión previa (o el refresh token expiró): sigue como anónimo
       })
       .finally(() => setInitializing(false));
+  }, []);
+
+  // Si un request autenticado recibe 401, apiFetch renueva la sesión por acá;
+  // si el refresh token también venció, limpiamos user y los layouts redirigen al login.
+  useEffect(() => {
+    setSessionHandlers({
+      refresh: async () => {
+        try {
+          const data = await apiFetch<AuthResponse>("/auth/refresh", { method: "POST" });
+          setUser(data.user);
+          setAccessToken(data.accessToken);
+          return data.accessToken;
+        } catch {
+          return null;
+        }
+      },
+      onExpired: () => {
+        setUser(null);
+        setAccessToken(null);
+      },
+    });
+    return () => setSessionHandlers(null);
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 import type { UserRole } from "../models/User.js";
 
-export const ACCESS_TOKEN_TTL = "15m";
+export const ACCESS_TOKEN_TTL = "1h";
 export const REFRESH_TOKEN_TTL = "30d";
 export const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 

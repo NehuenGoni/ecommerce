@@ -9,6 +9,7 @@ import { LoginPage } from "@/pages/LoginPage";
 
 vi.mock("@/lib/api", () => ({
   apiFetch: vi.fn(),
+  setSessionHandlers: vi.fn(),
   ApiError: class ApiError extends Error {
     status: number;
     constructor(message: string, status: number) {
