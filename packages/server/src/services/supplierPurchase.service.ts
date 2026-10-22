@@ -56,6 +56,11 @@ export async function createPurchase(
   input: CreatePurchaseInput,
   createdBy: string,
 ): Promise<SupplierPurchaseHydratedDocument> {
+  if (input.idempotencyKey) {
+    const existing = await SupplierPurchase.findOne({ idempotencyKey: input.idempotencyKey });
+    if (existing) return existing;
+  }
+
   const productIds = [...new Set(input.items.map((item) => item.product))];
   const products = await Product.find({ _id: { $in: productIds } });
   const productById = new Map(products.map((p) => [p._id.toString(), p]));
@@ -76,13 +81,25 @@ export async function createPurchase(
     });
   }
 
-  const purchase = await SupplierPurchase.create({
-    supplier: input.supplier,
-    items,
-    purchaseDate: input.purchaseDate,
-    notes: input.notes,
-    createdBy,
-  });
+  let purchase: SupplierPurchaseHydratedDocument;
+  try {
+    purchase = await SupplierPurchase.create({
+      supplier: input.supplier,
+      items,
+      purchaseDate: input.purchaseDate,
+      notes: input.notes,
+      idempotencyKey: input.idempotencyKey,
+      createdBy,
+    });
+  } catch (err) {
+    // Otro request con la misma clave ganó la carrera (reintento simultáneo):
+    // esa compra ya es la que mueve el stock, así que no hacemos nada más.
+    if (input.idempotencyKey && (err as { code?: number }).code === 11000) {
+      const winner = await SupplierPurchase.findOne({ idempotencyKey: input.idempotencyKey });
+      if (winner) return winner;
+    }
+    throw err;
+  }
 
   try {
     await registerPurchaseStock(

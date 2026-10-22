@@ -11,7 +11,7 @@ import {
   Warehouse,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,13 @@ const NAV_ITEMS = [
 export function AdminLayout() {
   const { user, initializing, logout } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // El backend en Fly se suspende cuando no hay tráfico y el primer request
+  // después puede fallar con 502. Un ping barato al entrar al panel lo despierta
+  // mientras el admin todavía está navegando, antes de que mande algo importante.
+  useEffect(() => {
+    fetch("/api/health").catch(() => {});
+  }, []);
 
   if (initializing) return null;
   if (!user) return <Navigate to="/login?redirect=/admin" replace />;

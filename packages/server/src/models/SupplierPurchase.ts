@@ -16,6 +16,8 @@ export interface SupplierPurchaseDocument {
   items: SupplierPurchaseItem[];
   purchaseDate: Date;
   notes: string;
+  /** Clave generada por el cliente para que reintentos del mismo envío no dupliquen la compra */
+  idempotencyKey?: string;
   createdBy: Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -44,9 +46,17 @@ const supplierPurchaseSchema = new Schema<SupplierPurchaseDocument>(
     },
     purchaseDate: { type: Date, default: Date.now },
     notes: { type: String, default: "" },
+    idempotencyKey: { type: String },
     createdBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
   { timestamps: true },
+);
+
+// Parcial (solo cuando hay clave) para que las compras sin clave, como las
+// que crea la importación de facturas, no choquen entre sí.
+supplierPurchaseSchema.index(
+  { idempotencyKey: 1 },
+  { unique: true, partialFilterExpression: { idempotencyKey: { $type: "string" } } },
 );
 
 export type SupplierPurchaseHydratedDocument = HydratedDocument<SupplierPurchaseDocument>;

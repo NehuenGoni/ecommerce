@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PurchaseForm, type PurchaseFormValues } from "@/components/admin/PurchaseForm";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,6 +10,10 @@ export function PurchaseFormPage() {
   const { accessToken } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState<ProductListItem[] | null>(null);
+  // Una clave por formulario abierto: si el POST falla a mitad de camino (ej. 502
+  // con la compra ya guardada) y se reintenta, el server devuelve la misma compra
+  // en vez de crear otra y sumar el stock de nuevo.
+  const idempotencyKey = useRef(crypto.randomUUID());
 
   useEffect(() => {
     if (!accessToken) return;
@@ -20,7 +24,11 @@ export function PurchaseFormPage() {
 
   async function handleSubmit(values: PurchaseFormValues) {
     if (!accessToken) return;
-    await apiFetch("/supplier-purchases", { method: "POST", accessToken, body: JSON.stringify(values) });
+    await apiFetch("/supplier-purchases", {
+      method: "POST",
+      accessToken,
+      body: JSON.stringify({ ...values, idempotencyKey: idempotencyKey.current }),
+    });
     navigate("/admin/compras");
   }
 

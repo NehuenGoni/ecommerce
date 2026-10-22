@@ -14,6 +14,7 @@ export const createPurchaseSchema = z.object({
   items: z.array(createPurchaseItemSchema).min(1, "Necesita al menos un item"),
   purchaseDate: z.coerce.date().optional(),
   notes: z.string().trim().optional().default(""),
+  idempotencyKey: z.string().trim().min(8).max(100).optional(),
 });
 
 export type CreatePurchaseInput = z.infer<typeof createPurchaseSchema>;

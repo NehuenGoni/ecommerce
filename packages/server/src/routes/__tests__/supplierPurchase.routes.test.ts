@@ -52,6 +52,46 @@ describe("POST /api/supplier-purchases", () => {
     expect(updatedProduct?.variants[0]!.stock).toBe(25);
   });
 
+  it("con la misma idempotencyKey no duplica la compra ni el stock", async () => {
+    const { accessToken } = await createAdminWithToken();
+    const product = await buildProduct("SKU-SP-6", 10);
+    const body = {
+      supplier: "Proveedor SRL",
+      items: [{ product: product._id.toString(), variant: "SKU-SP-6", quantity: 5, unitCost: 1000 }],
+      idempotencyKey: "clave-de-prueba-1",
+    };
+
+    const first = await request(app).post("/api/supplier-purchases").set("Authorization", `Bearer ${accessToken}`).send(body);
+    const retry = await request(app).post("/api/supplier-purchases").set("Authorization", `Bearer ${accessToken}`).send(body);
+
+    expect(first.status).toBe(201);
+    expect(retry.status).toBe(201);
+    expect(retry.body.purchase._id).toBe(first.body.purchase._id);
+    expect(await SupplierPurchase.countDocuments()).toBe(1);
+    expect((await Product.findById(product._id))?.variants[0]!.stock).toBe(15);
+  });
+
+  it("con requests simultáneos y la misma idempotencyKey solo suma el stock una vez", async () => {
+    const { accessToken } = await createAdminWithToken();
+    const product = await buildProduct("SKU-SP-7", 10);
+    await SupplierPurchase.init();
+    const body = {
+      supplier: "Proveedor SRL",
+      items: [{ product: product._id.toString(), variant: "SKU-SP-7", quantity: 5, unitCost: 1000 }],
+      idempotencyKey: "clave-de-prueba-2",
+    };
+
+    const results = await Promise.all(
+      [1, 2, 3].map(() =>
+        request(app).post("/api/supplier-purchases").set("Authorization", `Bearer ${accessToken}`).send(body),
+      ),
+    );
+
+    expect(results.every((r) => r.status === 201)).toBe(true);
+    expect(await SupplierPurchase.countDocuments()).toBe(1);
+    expect((await Product.findById(product._id))?.variants[0]!.stock).toBe(15);
+  });
+
   it("rechaza un SKU inexistente y no crea la compra", async () => {
     const { accessToken } = await createAdminWithToken();
     const product = await buildProduct("SKU-SP-2", 10);
