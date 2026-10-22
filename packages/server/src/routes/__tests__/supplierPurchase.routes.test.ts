@@ -50,6 +50,7 @@ describe("POST /api/supplier-purchases", () => {
 
     const updatedProduct = await Product.findById(product._id);
     expect(updatedProduct?.variants[0]!.stock).toBe(25);
+    expect(updatedProduct?.variants[0]!.costPrice).toBe(40000);
   });
 
   it("con la misma idempotencyKey no duplica la compra ni el stock", async () => {

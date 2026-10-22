@@ -50,7 +50,8 @@ export async function getPurchaseById(id: string): Promise<SupplierPurchaseDocum
  * Registra una compra a proveedor y actualiza el stock automáticamente, como
  * pide el brief. Si el ingreso de stock falla (ej. un SKU mal cargado que no
  * existe en el producto), se elimina la compra recién creada: no queremos un
- * registro de compra "fantasma" que nunca movió el inventario real.
+ * registro de compra "fantasma" que nunca movió el inventario real. También
+ * deja el unitCost de cada línea como costPrice vigente de la variante.
  */
 export async function createPurchase(
   input: CreatePurchaseInput,
@@ -115,6 +116,17 @@ export async function createPurchase(
     await purchase.deleteOne();
     throw err;
   }
+
+  // Solo después de que el stock ingresó: el costo de reposición pasa a ser el
+  // de esta compra. Si un SKU se repite en la compra, gana la última línea.
+  await Product.bulkWrite(
+    items.map((item) => ({
+      updateOne: {
+        filter: { _id: item.product, "variants.sku": item.variant },
+        update: { $set: { "variants.$.costPrice": item.unitCost } },
+      },
+    })),
+  );
 
   return purchase;
 }
