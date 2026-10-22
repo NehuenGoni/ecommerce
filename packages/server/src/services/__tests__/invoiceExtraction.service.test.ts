@@ -121,8 +121,8 @@ describe("runExtraction (camino feliz)", () => {
     expect(line.raw.unitCost).toBe(60000); // "600,00" -> 60000 centavos
     expect(line.decision.updateCostPrice).toBe(true);
     expect(line.decision.updateSalePrice).toBe(true);
-    // applyMargin(60000, 60%) = 96000 -> roundUpToStep(96000, 10000) = 100000
-    expect(line.decision.salePrice).toBe(100000);
+    // applyMargin(60000, 50%) = 90000 -> roundUpToStep(90000, 10000) = 90000
+    expect(line.decision.salePrice).toBe(90000);
   });
 
   it("sin match, deja la línea para vincular a mano (action skip)", async () => {

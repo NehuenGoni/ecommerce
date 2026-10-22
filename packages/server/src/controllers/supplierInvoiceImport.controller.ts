@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
-import { env } from "../config/env.js";
 import type { SupportedMimeType } from "../services/anthropic.service.js";
 import { signInvoiceFileUrl } from "../services/invoiceArchive.service.js";
 import * as invoiceImportService from "../services/invoiceImport.service.js";
+import { getPricingSettings } from "../services/settings.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { BadRequestError } from "../utils/errors.js";
 import type {
@@ -41,10 +41,11 @@ export const listImports = asyncHandler(async (req: Request, res: Response) => {
 
 export const getImport = asyncHandler(async (req: Request, res: Response) => {
   const doc = await invoiceImportService.getImportById(req.params.id!);
+  const { marginPercent, roundingStep } = await getPricingSettings();
   res.json({
     import: doc,
     fileUrl: signInvoiceFileUrl(doc.file),
-    pricingDefaults: { marginPercent: env.DEFAULT_MARGIN_PCT, roundingStep: env.PRICE_ROUNDING_STEP },
+    pricingDefaults: { marginPercent, roundingStep },
   });
 });
 

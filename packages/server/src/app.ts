@@ -17,6 +17,7 @@ import { productRouter } from "./routes/product.routes.js";
 import { supplierRouter } from "./routes/supplier.routes.js";
 import { supplierInvoiceImportRouter } from "./routes/supplierInvoiceImport.routes.js";
 import { supplierPurchaseRouter } from "./routes/supplierPurchase.routes.js";
+import { settingsRouter } from "./routes/settings.routes.js";
 import { uploadRouter } from "./routes/upload.routes.js";
 import { userRouter } from "./routes/user.routes.js";
 import { AppError } from "./utils/errors.js";
@@ -69,6 +70,7 @@ export function createApp(clientUrl: string): Express {
   app.use("/api/inventory", inventoryRouter);
   app.use("/api/supplier-purchases", supplierPurchaseRouter);
   app.use("/api/supplier-invoices", supplierInvoiceImportRouter);
+  app.use("/api/settings", settingsRouter);
 
   app.use((_req: Request, res: Response) => {
     res.status(404).json({ error: "Ruta no encontrada" });

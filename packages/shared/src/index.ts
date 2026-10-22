@@ -8,5 +8,6 @@ export * from "./types/invoice.js";
 export * from "./types/supplierInvoiceImport.js";
 export * from "./types/supplierPurchase.js";
 export * from "./types/stockMovement.js";
+export * from "./types/settings.js";
 export * from "./utils/money.js";
 export * from "./utils/pricing.js";

@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { centsToPesos, formatARS, parseArsAmount, pesosToCents } from "../money.js";
+import {
+  centsToPesos,
+  formatARS,
+  markupFromPrice,
+  parseArsAmount,
+  pesosToCents,
+  priceFromMarkup,
+} from "../money.js";
 
 describe("formatARS", () => {
   it("formatea centavos como pesos con punto de miles y sin decimales", () => {
@@ -23,6 +30,36 @@ describe("pesosToCents / centsToPesos", () => {
   it("son inversas entre sí para valores enteros", () => {
     expect(pesosToCents(1250)).toBe(125000);
     expect(centsToPesos(125000)).toBe(1250);
+  });
+});
+
+describe("priceFromMarkup", () => {
+  it("aplica el markup sobre el costo", () => {
+    expect(priceFromMarkup(100000, 40)).toBe(140000);
+  });
+
+  it("redondea al peso entero", () => {
+    // 33333 * 1.35 = 44999.55 -> $450
+    expect(priceFromMarkup(33333, 35)).toBe(45000);
+  });
+
+  it("con markup 0 devuelve el costo", () => {
+    expect(priceFromMarkup(100000, 0)).toBe(100000);
+  });
+});
+
+describe("markupFromPrice", () => {
+  it("calcula el markup con un decimal", () => {
+    expect(markupFromPrice(100000, 150000)).toBe(50);
+    expect(markupFromPrice(300000, 400000)).toBe(33.3);
+  });
+
+  it("devuelve null si el costo es 0", () => {
+    expect(markupFromPrice(0, 150000)).toBeNull();
+  });
+
+  it("devuelve negativo si el precio es menor al costo", () => {
+    expect(markupFromPrice(100000, 80000)).toBe(-20);
   });
 });
 

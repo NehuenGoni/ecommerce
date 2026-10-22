@@ -16,6 +16,24 @@ export function centsToPesos(cents: number): number {
 }
 
 /**
+ * Precio de venta (centavos) a partir del costo y un markup sobre costo.
+ * Redondea al peso entero para no generar precios con centavos raros.
+ * Ej: costo $1.000 (100000) + 40% -> 140000.
+ */
+export function priceFromMarkup(costCents: number, markupPct: number): number {
+  return Math.round((costCents * (1 + markupPct / 100)) / 100) * 100;
+}
+
+/**
+ * Markup sobre costo (%, un decimal) que implica un precio dado. Devuelve null
+ * si el costo es 0 (el markup no está definido). Puede ser negativo.
+ */
+export function markupFromPrice(costCents: number, priceCents: number): number | null {
+  if (costCents <= 0) return null;
+  return Math.round(((priceCents - costCents) / costCents) * 1000) / 10;
+}
+
+/**
  * Parsea un importe en formato argentino ("1.234,56") o, como fallback, en
  * formato estadounidense ("1.234.56" -> no; "1,234.56"), a centavos enteros.
  * Se usa para convertir los strings crudos que devuelve el modelo de

@@ -1,5 +1,5 @@
-import { applyMargin, netFromGross, parseArsAmount, roundUpToStep } from "@growshop/shared";
-import { env } from "../config/env.js";
+import { applyMargin, netFromGross, parseArsAmount, roundUpToStep, type PricingSettings } from "@growshop/shared";
+import { getPricingSettings } from "./settings.service.js";
 import {
   SupplierInvoiceImport,
   type SupplierInvoiceImportHydratedDocument,
@@ -123,17 +123,23 @@ async function buildLines(data: ExtractedInvoice): Promise<SupplierInvoiceImport
     data.lines.map((line) => ({ supplierSku: line.supplierSku ?? "", barcode: line.barcode ?? "" })),
   );
 
-  return data.lines.map((line, index) => buildLine(line, index + 1, matches[index]!));
+  const pricing = await getPricingSettings();
+  return data.lines.map((line, index) => buildLine(line, index + 1, matches[index]!, pricing));
 }
 
-function buildLine(line: ExtractedInvoiceLine, lineNumber: number, match: LineMatchResult): SupplierInvoiceImportLine {
+function buildLine(
+  line: ExtractedInvoiceLine,
+  lineNumber: number,
+  match: LineMatchResult,
+  pricing: PricingSettings,
+): SupplierInvoiceImportLine {
   const unitCost = resolveNetUnitCost(line);
   const hasCost = unitCost !== null;
   // Remito sin precio: se prellena con el costo actual de la variante (si matcheó) para que la
   // pantalla de revisión no arranque en $0, pero NO se marca para actualizar -- ver updateCostPrice.
   const decisionUnitCost = hasCost ? unitCost : (match.currentCostPrice ?? 0);
   const salePrice = hasCost
-    ? roundUpToStep(applyMargin(unitCost, env.DEFAULT_MARGIN_PCT), env.PRICE_ROUNDING_STEP)
+    ? roundUpToStep(applyMargin(unitCost, pricing.marginPercent), pricing.roundingStep)
     : null;
 
   return {

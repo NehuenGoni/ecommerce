@@ -10,6 +10,8 @@ import type { PaginatedResult } from "../utils/pagination.js";
 import type { CreatePurchaseInput, PurchaseQuery } from "../validators/supplierPurchase.validators.js";
 import { NotFoundError } from "../utils/errors.js";
 import { registerPurchaseStock } from "./inventory.service.js";
+import { applyMargin, roundUpToStep } from "@growshop/shared";
+import { getPricingSettings } from "./settings.service.js";
 
 export async function listPurchases(
   query: PurchaseQuery,
@@ -51,11 +53,16 @@ export async function getPurchaseById(id: string): Promise<SupplierPurchaseDocum
  * pide el brief. Si el ingreso de stock falla (ej. un SKU mal cargado que no
  * existe en el producto), se elimina la compra recién creada: no queremos un
  * registro de compra "fantasma" que nunca movió el inventario real. También
- * deja el unitCost de cada línea como costPrice vigente de la variante.
+ * deja el unitCost de cada línea como costPrice vigente de la variante y
+ * recalcula su precio de venta con la configuración de precios del negocio
+ * (margen + redondeo hacia arriba, ver settings.service.ts) si está activada.
+ * `autoPrice: false` lo desactiva siempre: lo usa la
+ * importación de facturas, donde el usuario decide el precio línea por línea.
  */
 export async function createPurchase(
   input: CreatePurchaseInput,
   createdBy: string,
+  options: { autoPrice?: boolean } = {},
 ): Promise<SupplierPurchaseHydratedDocument> {
   if (input.idempotencyKey) {
     const existing = await SupplierPurchase.findOne({ idempotencyKey: input.idempotencyKey });
@@ -118,12 +125,26 @@ export async function createPurchase(
   }
 
   // Solo después de que el stock ingresó: el costo de reposición pasa a ser el
-  // de esta compra. Si un SKU se repite en la compra, gana la última línea.
+  // de esta compra y, salvo que el caller diga lo contrario, el precio de venta
+  // se recalcula con el margen por defecto. Si un SKU se repite en la compra,
+  // gana la última línea.
+  const pricing = await getPricingSettings();
+  const autoPrice = options.autoPrice !== false && pricing.autoPriceOnPurchase;
   await Product.bulkWrite(
     items.map((item) => ({
       updateOne: {
         filter: { _id: item.product, "variants.sku": item.variant },
-        update: { $set: { "variants.$.costPrice": item.unitCost } },
+        update: {
+          $set: {
+            "variants.$.costPrice": item.unitCost,
+            ...(autoPrice && {
+              "variants.$.price": roundUpToStep(
+                applyMargin(item.unitCost, pricing.marginPercent),
+                pricing.roundingStep,
+              ),
+            }),
+          },
+        },
       },
     })),
   );

@@ -268,6 +268,7 @@ async function doApply(
       notes: input.notes ?? "",
     },
     userId,
+    { autoPrice: false },
   );
 
   // El stock ya se movió acá (createPurchase salió bien): una falla de precio en una línea puntual

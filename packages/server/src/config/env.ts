@@ -19,8 +19,8 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional().default(""),
   ANTHROPIC_MODEL: z.string().optional().default("claude-sonnet-5"),
   ANTHROPIC_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).optional().default("medium"),
-  /** Margen por defecto (%) para calcular el precio de venta a partir del costo de una factura importada. */
-  DEFAULT_MARGIN_PCT: z.coerce.number().min(0).optional().default(60),
+  /** Margen por defecto (%) para calcular el precio de venta a partir del costo (compras y facturas importadas). */
+  DEFAULT_MARGIN_PCT: z.coerce.number().min(0).optional().default(50),
   /** Paso de redondeo hacia arriba para precios calculados, en centavos ($100 = 10000). */
   PRICE_ROUNDING_STEP: z.coerce.number().int().min(1).optional().default(10000),
 });

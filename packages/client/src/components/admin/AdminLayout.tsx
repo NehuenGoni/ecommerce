@@ -6,6 +6,7 @@ import {
   Menu,
   Package,
   ScanLine,
+  Settings,
   Truck,
   UserCog,
   Warehouse,
@@ -27,6 +28,7 @@ const NAV_ITEMS = [
   { to: "/admin/compras", label: "Compras", icon: Truck },
   { to: "/admin/compras/importaciones", label: "Importar factura", icon: ScanLine },
   { to: "/admin/administradores", label: "Administradores", icon: UserCog },
+  { to: "/admin/configuracion", label: "Configuración", icon: Settings },
 ];
 
 export function AdminLayout() {

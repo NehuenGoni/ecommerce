@@ -224,7 +224,7 @@ describe("GET /api/supplier-invoices/:id", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.import._id).toBe(doc._id.toString());
-    expect(res.body.pricingDefaults).toEqual({ marginPercent: 60, roundingStep: 10000 });
+    expect(res.body.pricingDefaults).toEqual({ marginPercent: 50, roundingStep: 10000 });
     expect(res.body.fileUrl).toBe(""); // sin Cloudinary configurado en test
   });
 
