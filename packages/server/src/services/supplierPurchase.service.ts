@@ -40,7 +40,7 @@ export async function listPurchases(
 
 export async function getPurchaseById(id: string): Promise<SupplierPurchaseDocument> {
   const purchase = await SupplierPurchase.findById(id)
-    .populate("items.product", "name slug")
+    .populate("items.product", "name slug variants.sku variants.name")
     .populate("createdBy", "firstName lastName email");
   if (!purchase) {
     throw new NotFoundError("Compra no encontrada");

@@ -29,6 +29,7 @@ import { OrdersListPage as AdminOrdersListPage } from "@/pages/admin/OrdersListP
 import { ProductFormPage as AdminProductFormPage } from "@/pages/admin/ProductFormPage";
 import { ProductsListPage as AdminProductsListPage } from "@/pages/admin/ProductsListPage";
 import { PurchaseFormPage as AdminPurchaseFormPage } from "@/pages/admin/PurchaseFormPage";
+import { PurchaseDetailPage as AdminPurchaseDetailPage } from "@/pages/admin/PurchaseDetailPage";
 import { PurchasesListPage as AdminPurchasesListPage } from "@/pages/admin/PurchasesListPage";
 import { SettingsPage as AdminSettingsPage } from "@/pages/admin/SettingsPage";
 import { SuppliersPage as AdminSuppliersPage } from "@/pages/admin/SuppliersPage";
@@ -63,6 +64,7 @@ function App() {
           <Route path="inventario" element={<AdminInventoryPage />} />
           <Route path="compras" element={<AdminPurchasesListPage />} />
           <Route path="compras/nueva" element={<AdminPurchaseFormPage />} />
+          <Route path="compras/:id" element={<AdminPurchaseDetailPage />} />
           <Route path="compras/importaciones" element={<AdminInvoiceImportsListPage />} />
           <Route path="compras/importaciones/:id" element={<AdminInvoiceImportReviewPage />} />
           <Route path="administradores" element={<AdminAdminsPage />} />

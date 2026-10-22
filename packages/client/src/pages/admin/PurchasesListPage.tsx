@@ -1,6 +1,6 @@
 import { formatARS, type SupplierPurchase } from "@growshop/shared";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Pagination } from "@/components/catalog/Pagination";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,7 @@ function totalOf(purchase: AdminPurchase): number {
 
 export function PurchasesListPage() {
   const { accessToken } = useAuth();
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [data, setData] = useState<Paginated<AdminPurchase> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -74,13 +75,32 @@ export function PurchasesListPage() {
             </thead>
             <tbody>
               {data.items.map((purchase) => (
-                <tr key={purchase._id} className="border-b border-border last:border-0">
+                <tr
+                  key={purchase._id}
+                  onClick={() => navigate(`/admin/compras/${purchase._id}`)}
+                  className="cursor-pointer border-b border-border transition-colors last:border-0 hover:bg-muted/40"
+                >
                   <td className="px-4 py-2.5 font-mono text-muted-foreground">
                     {new Date(purchase.purchaseDate).toLocaleDateString("es-AR")}
                   </td>
-                  <td className="px-4 py-2.5 font-medium">{purchase.supplier}</td>
+                  <td className="px-4 py-2.5 font-medium">
+                    <Link
+                      to={`/admin/compras/${purchase._id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="hover:text-primary hover:underline"
+                    >
+                      {purchase.supplier}
+                    </Link>
+                  </td>
                   <td className="px-4 py-2.5 text-muted-foreground">
-                    {purchase.items.map((item) => item.product?.name ?? item.variant).join(", ")}
+                    {purchase.items.length} {purchase.items.length === 1 ? "ítem" : "ítems"}
+                    <span className="ml-2 text-xs">
+                      {purchase.items
+                        .slice(0, 2)
+                        .map((item) => item.product?.name ?? item.variant)
+                        .join(", ")}
+                      {purchase.items.length > 2 && ` y ${purchase.items.length - 2} más`}
+                    </span>
                   </td>
                   <td className="px-4 py-2.5 font-mono">{formatARS(totalOf(purchase))}</td>
                 </tr>
